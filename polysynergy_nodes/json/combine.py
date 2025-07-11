@@ -1,0 +1,30 @@
+from polysynergy_nodes.base.setup_context.node import Node
+from polysynergy_nodes.base.setup_context.node_decorator import node
+from polysynergy_nodes.base.setup_context.node_variable_settings import NodeVariableSettings
+from polysynergy_nodes.base.setup_context.path_settings import PathSettings
+
+
+@node(
+    name="Json Combine",
+    category="json",
+    icon="json.svg"
+)
+class JsonCombine(Node):
+    combine: dict = NodeVariableSettings(label="Combine", has_in=True, dock=True)
+
+    true_path: bool | dict = PathSettings(label="Combined")
+    false_path: bool | dict = PathSettings(label="Error")
+
+    def execute(self):
+        try:
+            combined = {}
+            for key, value in (self.combine or {}).items():
+                if isinstance(value, dict):
+                    combined.update(value)
+                else:
+                    raise ValueError(f"Key '{key}' does not contain a dict")
+
+            self.true_path = combined
+
+        except Exception as e:
+            self.false_path = {"error": str(e)}

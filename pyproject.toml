@@ -1,0 +1,29 @@
+[tool.poetry]
+name = "polysynergy_nodes"
+version = "0.1.0"
+description = "Node library for PolySynergy"
+authors = ["Dion Snoeijen"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pyjwt = "^2.10"
+openai = "^1.93.0"
+openai-agents = "^0.1.0"
+boto3 = "^1.35.97"
+botocore = "^1.35.97"
+faker = "^37.1.0"
+jinja2 = "^3.1.6"
+jmespath = "^1.0.1"
+markdown = "^3.8.2"
+mistralai = "^1.5.1"
+pubnub = "^10.4.0"
+pydantic = "^2.10.6"
+requests = "^2.32.3"
+typing_extensions = "^4.12.2"
+xhtml2pdf = "^0.2.17"
+qdrant-client = "^1.13.3"
+polysynergy_node_runner = { path = "../node_runner", develop = true }
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
