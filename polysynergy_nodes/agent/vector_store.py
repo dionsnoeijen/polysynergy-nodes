@@ -3,10 +3,10 @@ import os
 from polysynergy_nodes.agent.services.contexts.context_base import ContextBase
 from polysynergy_nodes.agent.services.contexts.qdrant_point import QdrantPoint
 from polysynergy_nodes.agent.utils.find_connected_context import find_connected_context_client
-from polysynergy_nodes.base.setup_context.node import Node
-from polysynergy_nodes.base.setup_context.node_decorator import node
-from polysynergy_nodes.base.setup_context.node_variable_settings import NodeVariableSettings
-from polysynergy_nodes.base.setup_context.path_settings import PathSettings
+from polysynergy_node_runner.setup_context.node import Node
+from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
+from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
 from pydantic import ValidationError
 

@@ -1,14 +1,14 @@
 import json
 
-from polysynergy_nodes.base.setup_context.path_settings import PathSettings
+from polysynergy_node_runner.setup_context.path_settings import PathSettings
 from polysynergy_nodes.agent.services.chat_memories.chat_memory_base import ChatMemoryBase
 from polysynergy_nodes.agent.services.clients.mistral_ai import MistralAI
 from polysynergy_nodes.agent.utils.find_connected_tools import find_connected_tools
 from polysynergy_nodes.agent.utils.find_connected_memory import find_connected_memory
-from polysynergy_nodes.base.setup_context.dock_property import dock_text_area
-from polysynergy_nodes.base.setup_context.node import Node
-from polysynergy_nodes.base.setup_context.node_decorator import node
-from polysynergy_nodes.base.setup_context.node_variable_settings import NodeVariableSettings
+from polysynergy_node_runner.setup_context.dock_property import dock_text_area
+from polysynergy_node_runner.setup_context.node import Node
+from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
 
 
 @node(

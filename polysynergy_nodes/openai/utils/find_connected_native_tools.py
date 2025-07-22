@@ -1,5 +1,5 @@
-from polysynergy_nodes.base.execution_context.flow import Flow
-from polysynergy_nodes.base.execution_context.is_compatible_provider import is_compatible_provider
+from polysynergy_node_runner.execution_context.flow import Flow
+from polysynergy_node_runner.execution_context.is_compatible_provider import is_compatible_provider
 from polysynergy_nodes.openai.services.native_tools.native_tool_base import NativeToolBase
 
 

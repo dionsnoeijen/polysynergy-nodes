@@ -1,8 +1,8 @@
 import math
-from polysynergy_nodes.base.setup_context.node import Node
-from polysynergy_nodes.base.setup_context.node_decorator import node
-from polysynergy_nodes.base.setup_context.node_variable_settings import NodeVariableSettings
-from polysynergy_nodes.base.setup_context.node_error import NodeError
+from polysynergy_node_runner.setup_context.node import Node
+from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
+from polysynergy_node_runner.setup_context.node_error import NodeError
 from polysynergy_nodes.math.utils.to_number import to_number
 
 @node(name="Ceil", category="math", type="ceil")

@@ -1,7 +1,7 @@
-from polysynergy_nodes.base.setup_context.dock_property import dock_property
-from polysynergy_nodes.base.setup_context.node_decorator import node
-from polysynergy_nodes.base.setup_context.node_variable_settings import NodeVariableSettings
-from polysynergy_nodes.base.setup_context.service_node import ServiceNode
+from polysynergy_node_runner.setup_context.dock_property import dock_property
+from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
+from polysynergy_node_runner.setup_context.service_node import ServiceNode
 from polysynergy_nodes.agent.services.chat_memories.dynamo_db_chat_memory import DynamoDBChatMemoryService
 from polysynergy_nodes.agent.services.chat_memories.chat_memory_base import ChatMemoryBase
 

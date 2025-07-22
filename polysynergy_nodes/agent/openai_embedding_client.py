@@ -1,9 +1,9 @@
 from polysynergy_nodes.agent.services.embeddings.embeddings_base import EmbeddingsBase
-from polysynergy_nodes.base.setup_context.dock_property import dock_property
-from polysynergy_nodes.base.setup_context.node_decorator import node
-from polysynergy_nodes.base.setup_context.node_variable_settings import NodeVariableSettings
+from polysynergy_node_runner.setup_context.dock_property import dock_property
+from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
 from polysynergy_nodes.agent.services.embeddings.openai_embeddings import OpenAIEmbeddings as OpenAIEmbeddingsClient
-from polysynergy_nodes.base.setup_context.service_node import ServiceNode
+from polysynergy_node_runner.setup_context.service_node import ServiceNode
 
 @node(
     name="OpenAI Embeddings Client",

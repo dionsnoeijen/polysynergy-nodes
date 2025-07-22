@@ -1,9 +1,9 @@
-from polysynergy_nodes.base.execution_context.flow_state import FlowState
-from polysynergy_nodes.base.setup_context.dock_property import dock_dict, dock_text_area
-from polysynergy_nodes.base.setup_context.node import Node
-from polysynergy_nodes.base.setup_context.node_decorator import node
-from polysynergy_nodes.base.setup_context.node_variable_settings import NodeVariableSettings
-from polysynergy_nodes.base.setup_context.path_settings import PathSettings
+from polysynergy_node_runner.execution_context.flow_state import FlowState
+from polysynergy_node_runner.setup_context.dock_property import dock_dict, dock_text_area
+from polysynergy_node_runner.setup_context.node import Node
+from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
+from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
 
 @node(

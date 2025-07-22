@@ -1,7 +1,7 @@
-from polysynergy_nodes.base.setup_context.node import Node
-from polysynergy_nodes.base.setup_context.node_decorator import node
-from polysynergy_nodes.base.setup_context.node_variable_settings import NodeVariableSettings
-from polysynergy_nodes.base.setup_context.path_settings import PathSettings
+from polysynergy_node_runner.setup_context.node import Node
+from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
+from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
 
 @node(
@@ -15,11 +15,11 @@ class LoopEnd(Node):
     true_path: bool | list | str | int | float | dict = PathSettings(label="Pass Result", info="When the loop is done, it will pass the result of the node connected to this one")
 
     def execute(self):
-        connections = self.flow.get_driving_connections(self.id)
+        connections = self.get_driving_connections()
 
         sources = []
         for connection in connections:
-            source_node = self.flow.get_node(connection.source_node_id)
+            source_node = self.state.get_node_by_id(connection.source_node_id)
             if hasattr(source_node, "true_path"):
                 sources.append(source_node)
 

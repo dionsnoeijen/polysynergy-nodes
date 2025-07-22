@@ -1,4 +1,12 @@
 import json
+
+from polysynergy_node_runner.execution_context.flow_state import FlowState
+from polysynergy_node_runner.setup_context.path_settings import PathSettings
+from polysynergy_node_runner.setup_context.dock_property import dock_text_area, dock_json
+from polysynergy_node_runner.setup_context.node import Node
+from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
+
 from polysynergy_nodes.agent.services.clients.client_base import ClientBase
 from polysynergy_nodes.agent.services.contexts.context_base import ContextBase
 from polysynergy_nodes.agent.utils.find_connected_client import find_connected_client
@@ -6,12 +14,6 @@ from polysynergy_nodes.agent.utils.find_connected_context import find_connected_
 from polysynergy_nodes.agent.utils.find_connected_tools import find_connected_tools, format_tool_instructions
 from polysynergy_nodes.agent.utils.find_connected_memory import find_connected_memory
 from polysynergy_nodes.agent.services.chat_memories.chat_memory_base import ChatMemoryBase
-from polysynergy_nodes.base.execution_context.flow_state import FlowState
-from polysynergy_nodes.base.setup_context.path_settings import PathSettings
-from polysynergy_nodes.base.setup_context.dock_property import dock_text_area, dock_json
-from polysynergy_nodes.base.setup_context.node import Node
-from polysynergy_nodes.base.setup_context.node_decorator import node
-from polysynergy_nodes.base.setup_context.node_variable_settings import NodeVariableSettings
 
 @node(
     name='Agent',

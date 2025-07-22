@@ -1,5 +1,5 @@
-from polysynergy_nodes.base.setup_context.node_decorator import node
-from polysynergy_nodes.base.setup_context.service_node import ServiceNode
+from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.service_node import ServiceNode
 
 @node(
     name="Mistral Client",

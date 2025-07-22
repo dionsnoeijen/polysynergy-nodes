@@ -1,10 +1,10 @@
 from polysynergy_nodes.agent.services.embeddings.embeddings_base import EmbeddingsBase
 from polysynergy_nodes.agent.utils.find_connected_embeddings_client import find_connected_embeddings_client
-from polysynergy_nodes.base.setup_context.dock_property import dock_property
-from polysynergy_nodes.base.setup_context.node import Node
-from polysynergy_nodes.base.setup_context.node_decorator import node
-from polysynergy_nodes.base.setup_context.node_variable_settings import NodeVariableSettings
-from polysynergy_nodes.base.setup_context.path_settings import PathSettings
+from polysynergy_node_runner.setup_context.dock_property import dock_property
+from polysynergy_node_runner.setup_context.node import Node
+from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
+from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
 
 @node(

@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock
 from polysynergy_nodes.random.random_path import RandomPath
-from polysynergy_nodes.base.execution_context.connection import Connection
+from polysynergy_node_runner.execution_context.connection import Connection
 import random
 
 class TestRandomPathNode(unittest.TestCase):

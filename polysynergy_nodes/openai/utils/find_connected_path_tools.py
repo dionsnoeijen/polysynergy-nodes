@@ -5,7 +5,7 @@ import json
 
 from openai.types.responses.response_input_item_param import FunctionCallOutput
 
-from polysynergy_nodes.base.execution_context.flow_state import FlowState
+from polysynergy_node_runner.execution_context.flow_state import FlowState
 
 
 def find_nodes_for_tool(start_node):

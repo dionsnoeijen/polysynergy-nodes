@@ -1,4 +1,4 @@
-from polysynergy_nodes.base.execution_context.flow import Flow
+from polysynergy_node_runner.execution_context.flow import Flow
 
 def generate_tools_schema(tools: dict) -> dict:
     schema = {

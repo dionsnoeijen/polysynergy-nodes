@@ -1,8 +1,8 @@
-from polysynergy_nodes.base.execution_context.connection import Connection
-from polysynergy_nodes.base.setup_context.node import Node
-from polysynergy_nodes.base.setup_context.node_decorator import node
-from polysynergy_nodes.base.setup_context.node_variable_settings import NodeVariableSettings
-from polysynergy_nodes.base.setup_context.path_settings import PathSettings
+from polysynergy_node_runner.execution_context.connection import Connection
+from polysynergy_node_runner.setup_context.node import Node
+from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
+from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
 
 @node(
@@ -30,7 +30,7 @@ class ListLoop(Node):
     def continue_loop(self):
         self._flag = "continue"
 
-    def execute(self):
+    async def execute(self):
         if not self.input_list:
             raise ValueError("List Loop: No valid list provided")
 
@@ -46,7 +46,7 @@ class ListLoop(Node):
 
                 if self._flag == "break":
                     loop_end_node.unblock()
-                    self.flow.execute_node(loop_end_node)
+                    await self.flow.execute_node(loop_end_node)
                     self._flag = None
                     break
 
@@ -61,9 +61,9 @@ class ListLoop(Node):
                     node_in_loop.resurrect()
 
                 self.resurrect()
-                self.flow.execute_node(self)
+
+                await self.flow.execute_node(self)
 
                 if index == len(self.input_list) - 1 and loop_end_node:
                     loop_end_node.unblock()
-                    self.flow.execute_node(loop_end_node)
-
+                    await self.flow.execute_node(loop_end_node)

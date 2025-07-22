@@ -1,6 +1,6 @@
 from polysynergy_nodes.agent.services.contexts.context_base import ContextBase
-from polysynergy_nodes.base.execution_context.flow import Flow
-from polysynergy_nodes.base.execution_context.is_compatible_provider import is_compatible_provider
+from polysynergy_node_runner.execution_context.flow import Flow
+from polysynergy_node_runner.execution_context.is_compatible_provider import is_compatible_provider
 
 
 def find_connected_context_client(node_id: str, flow: Flow) -> ContextBase | None:

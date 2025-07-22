@@ -1,10 +1,10 @@
 import json
 from pydantic import ValidationError
 
-from polysynergy_nodes.base.setup_context.dock_property import dock_json
-from polysynergy_nodes.base.setup_context.node import Node
-from polysynergy_nodes.base.setup_context.node_decorator import node
-from polysynergy_nodes.base.setup_context.node_variable_settings import NodeVariableSettings
+from polysynergy_node_runner.setup_context.dock_property import dock_json
+from polysynergy_node_runner.setup_context.node import Node
+from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
 from polysynergy_nodes.validator.utils.generate_pydantic_model import generate_pydantic_model
 
 

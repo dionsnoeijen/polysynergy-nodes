@@ -1,7 +1,7 @@
 from polysynergy_nodes.agent.services.clients.client_base import ClientBase
 from polysynergy_nodes.agent.services.embeddings.embeddings_base import EmbeddingsBase
-from polysynergy_nodes.base.execution_context.flow import Flow
-from polysynergy_nodes.base.execution_context.is_compatible_provider import is_compatible_provider
+from polysynergy_node_runner.execution_context.flow import Flow
+from polysynergy_node_runner.execution_context.is_compatible_provider import is_compatible_provider
 
 
 def find_connected_embeddings_client(node_id: str, flow: Flow) -> ClientBase | None:
