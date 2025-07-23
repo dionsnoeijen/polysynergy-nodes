@@ -37,7 +37,7 @@ class OpenAiTool(Node):
     true_path: bool = PathSettings(
         default=True,
         label='Continue',
-        info='The way forward!',
+        info='A way forward!',
     )
 
     def execute(self):

@@ -7,6 +7,7 @@ from email.message import EmailMessage as RawEmail
 from polysynergy_node_runner.setup_context.dock_property import dock_text_area, dock_property
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.node_error import NodeError
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
@@ -75,7 +76,14 @@ class SendEmail(Node):
 
             msg.set_content(self.body, subtype="html" if self.is_html else "plain")
 
-            for att in self.attachments or []:
+            attachments = self.attachments or []
+
+            if isinstance(attachments, dict):
+                attachments = [attachments]
+            elif not isinstance(attachments, list):
+                raise ValueError("Attachments must be a list of dicts or a single dict.")
+
+            for att in attachments:
                 filename = att.get("filename", "attachment")
                 content_b64 = att.get("content")
                 mimetype = att.get("mimetype", "application/octet-stream")
@@ -83,20 +91,17 @@ class SendEmail(Node):
                     raise ValueError(f"Attachment '{filename}' has no content.")
                 data = base64.b64decode(content_b64)
                 maintype, subtype = mimetype.split("/", 1)
-                part = MIMEBase(maintype, subtype)
-                part.set_payload(data)
-                encoders.encode_base64(part)
-                part.add_header("Content-Disposition", f'attachment; filename="{filename}"')
-                msg.attach(part)
+                msg.add_attachment(data, maintype=maintype, subtype=subtype, filename=filename)
 
             server = smtplib.SMTP(self.smtp_host, self.smtp_port, timeout=10)
             if self.smtp_use_tls:
                 server.starttls()
             server.login(self.smtp_user, self.smtp_password)
-            server.send_message(msg, to_addrs=recipients)
+            response = server.send_message(msg, to_addrs=recipients)
+            print("SMTP RESPONSE:", response)
             server.quit()
 
             self.true_path = True
 
         except Exception as e:
-            self.false_path = {'error': str(e)}
+            self.false_path = NodeError.format(e, True)

@@ -24,7 +24,7 @@ from polysynergy_nodes.openai.utils.output_schema import build_output_schema_fro
 
 
 @node(
-    name="OpenAI Agent",
+    name="OpenAI Agent c",
     category="openai",
     icon="openai_dark.svg",
     metadata={ "layout": "openai_agent" }
@@ -233,7 +233,7 @@ class OpenAiAgent(Node):
     )
 
 
-    context: ContextBase | None = NodeVariableSettings(
+    rag_context: ContextBase | None = NodeVariableSettings(
         label="Context", dock=dock_text_area(
             info='Additional background knowledge (RAG).'
         ), has_in=True
@@ -276,6 +276,7 @@ class OpenAiAgent(Node):
 
             for tool in path_tools:
                 if hasattr(tool, "set_agent"):
+                    print('SETTING AGENT WITH ', tool.name)
                     tool.set_agent(agent)
 
             messages = []
@@ -286,6 +287,10 @@ class OpenAiAgent(Node):
             latest_user_input = await self._add_user_input(messages)
             await self._add_context(client, context, latest_user_input, messages)
 
+            print("TOOLS IN AGENT:")
+            for t in agent.tools:
+                print(" →", t.name)
+
             result = await Runner.run(agent, messages, run_config=run_config)
             self.true_path = result.final_output
 
@@ -295,10 +300,10 @@ class OpenAiAgent(Node):
             self.false_path = NodeError.format(e)
 
     async def _setup(self):
-        native_tools = find_connected_native_tools(self.id, self.flow)
-        path_tools = find_connected_path_tools(self.id, self.flow)
-        chat_memory = find_connected_memory(self.id, self.flow)
-        context = find_connected_context_client(self.id, self.flow)
+        native_tools = find_connected_native_tools(self)
+        path_tools = find_connected_path_tools(self)
+        chat_memory = find_connected_memory(self)
+        context = find_connected_context_client(self)
         model_settings = ModelSettings(
             temperature=self.temperature,
             top_p=self.top_p,

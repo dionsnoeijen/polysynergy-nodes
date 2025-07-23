@@ -6,8 +6,7 @@ from polysynergy_node_runner.setup_context.node_variable_settings import NodeVar
 @node(
     name="Tool Result",
     category="ai",
-    icon="hammer.svg",
-    has_enabled_switch=False
+    icon="hammer.svg"
 )
 class AgentToolResult(Node):
 
