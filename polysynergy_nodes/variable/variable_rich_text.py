@@ -9,13 +9,13 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
 
 @node(
-    name="Variable String",
+    name="Variable Rich Text",
     category="variable",
     icon='string.svg',
     version=1.02
 )
-class VariableString(Node):
-    value: str = NodeVariableSettings(label="Value", dock=dock_text_area(), has_in=True)
+class VariableRichText(Node):
+    value: str = NodeVariableSettings(label="Value", dock=dock_text_area(rich=True), has_in=True)
     values: dict[str, str] = NodeVariableSettings(label="Values", dock=True, has_in=True, has_out=True)
 
     true_path: bool | str = PathSettings(label="Result", info="The value with placeholders replaced")
