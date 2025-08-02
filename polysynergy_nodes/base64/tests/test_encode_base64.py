@@ -1,5 +1,5 @@
 import unittest
-from polysynergy_node_runner64.encode_base64 import EncodeBase64
+from polysynergy_nodes.base64.encode_base64 import EncodeBase64
 
 class TestEncodeBase64Node(unittest.TestCase):
 

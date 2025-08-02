@@ -1,6 +1,6 @@
 import logging
 import unittest
-from polysynergy_node_runner64.decode_base64 import DecodeBase64
+from polysynergy_nodes.base64.decode_base64 import DecodeBase64
 
 class TestDecodeBase64Node(unittest.TestCase):
 
