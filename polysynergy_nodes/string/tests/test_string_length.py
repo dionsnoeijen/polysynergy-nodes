@@ -5,27 +5,33 @@ from polysynergy_nodes.string.string_length import StringLength
 class TestStringLength:
     def test_string_length_basic(self):
         node = StringLength()
+        node.true_path = False
+        node.false_path = False
         node.text = "hello"
         node.execute()
         
         assert node.true_path == 5
-        assert node.false_path is None
+        assert node.false_path is False
 
     def test_string_length_empty(self):
         node = StringLength()
+        node.true_path = False
+        node.false_path = False
         node.text = ""
         node.execute()
         
         assert node.true_path == 0
-        assert node.false_path is None
+        assert node.false_path is False
 
     def test_string_length_unicode(self):
         node = StringLength()
+        node.true_path = False
+        node.false_path = False
         node.text = "héllo wörld 🚀"
         node.execute()
         
         assert node.true_path == 13
-        assert node.false_path is None
+        assert node.false_path is False
 
     def test_string_length_non_string_input(self):
         node = StringLength()

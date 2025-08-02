@@ -5,21 +5,25 @@ from polysynergy_nodes.string.string_contains import StringContains
 class TestStringContains:
     def test_contains_basic_true(self):
         node = StringContains()
+        node.true_path = False
+        node.false_path = False
         node.text = "hello world"
         node.search = "world"
         node.execute()
         
         assert node.true_path is True
-        assert node.false_path is None
+        assert node.false_path is False
 
     def test_contains_basic_false(self):
         node = StringContains()
+        node.true_path = False
+        node.false_path = False
         node.text = "hello world"
         node.search = "foo"
         node.execute()
         
         assert node.true_path is False
-        assert node.false_path is None
+        assert node.false_path is False
 
     def test_contains_case_sensitive_true(self):
         node = StringContains()
