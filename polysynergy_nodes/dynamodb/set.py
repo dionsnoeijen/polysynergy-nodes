@@ -1,3 +1,7 @@
+# PACKAGE RECOMMENDATION: Move to @polysynergy/cloud-services
+# This node provides AWS DynamoDB integration with external cloud dependencies.
+# It would be better suited in a dedicated cloud services package rather than core basic nodes.
+
 import os
 
 from polysynergy_node_runner.setup_context.dock_property import dock_property

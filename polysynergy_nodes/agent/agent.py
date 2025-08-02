@@ -1,3 +1,7 @@
+# PACKAGE RECOMMENDATION: Move to @polysynergy/ai-agents
+# This node provides complex AI agent orchestration with external dependencies (OpenAI, Mistral, Qdrant).
+# It would be better suited in a dedicated AI/ML package rather than core basic nodes.
+
 import json
 
 from polysynergy_node_runner.execution_context.flow_state import FlowState

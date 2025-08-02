@@ -1,3 +1,7 @@
+# PACKAGE RECOMMENDATION: Move to @polysynergy/web
+# This node provides HTTP client functionality with external network dependencies.
+# It would be better suited in a dedicated web/network package rather than core basic nodes.
+
 import json
 import requests
 from http import HTTPMethod
