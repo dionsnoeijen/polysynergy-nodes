@@ -4,6 +4,8 @@
 
 # PolySynergy Nodes
 
+> 🚀 **Get Started**: This is part of the [PolySynergy Orchestrator](https://github.com/dionsnoeijen/polysynergy-orchestrator) - a visual workflow automation platform. Start there to set up the complete system and begin building AI agent workflows.
+
 <p align="center">
   <strong>⚠️ This repository is currently under construction ⚠️</strong>
 </p>
