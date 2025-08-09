@@ -1,0 +1,24 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Top-left corner -->
+  <rect x="3" y="3" width="8" height="8" stroke="currentColor" stroke-width="2" fill="none"/>
+  <rect x="5" y="5" width="4" height="4" fill="currentColor"/>
+  
+  <!-- Top-right corner -->
+  <rect x="13" y="3" width="8" height="8" stroke="currentColor" stroke-width="2" fill="none"/>
+  <rect x="15" y="5" width="4" height="4" fill="currentColor"/>
+  
+  <!-- Bottom-left corner -->
+  <rect x="3" y="13" width="8" height="8" stroke="currentColor" stroke-width="2" fill="none"/>
+  <rect x="5" y="15" width="4" height="4" fill="currentColor"/>
+  
+  <!-- Bottom-right data pattern -->
+  <rect x="13" y="13" width="2" height="2" fill="currentColor"/>
+  <rect x="16" y="13" width="2" height="2" fill="currentColor"/>
+  <rect x="19" y="13" width="2" height="2" fill="currentColor"/>
+  <rect x="13" y="16" width="2" height="2" fill="currentColor"/>
+  <rect x="16" y="16" width="2" height="2" fill="currentColor"/>
+  <rect x="19" y="16" width="2" height="2" fill="currentColor"/>
+  <rect x="13" y="19" width="2" height="2" fill="currentColor"/>
+  <rect x="16" y="19" width="2" height="2" fill="currentColor"/>
+  <rect x="19" y="19" width="2" height="2" fill="currentColor"/>
+</svg>
