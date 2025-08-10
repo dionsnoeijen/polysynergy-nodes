@@ -4,12 +4,12 @@ from polysynergy_node_runner.setup_context.node_variable_settings import NodeVar
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
 from polysynergy_node_runner.setup_context.node_error import NodeError
 
-@node(name="Boolean OR", category="boolean", version=1.0)
-class BooleanOr(Node):
+@node(name="Boolean XOR", category="boolean", version=1.0)
+class BooleanXor(Node):
     a: bool = NodeVariableSettings(label="A", dock=True, has_in=True, has_out=False)
     b: bool = NodeVariableSettings(label="B", dock=True, has_in=True, has_out=False)
     
-    true_path: bool = PathSettings(label="Result", info="True if either A or B is true")
+    true_path: bool = PathSettings(label="Result", info="True if A and B are different")
     false_path: bool = PathSettings(label="Error", info="Error or false result")
 
     def coerce_to_bool(self, value):
@@ -29,7 +29,7 @@ class BooleanOr(Node):
             bool_a = self.coerce_to_bool(self.a)
             bool_b = self.coerce_to_bool(self.b)
             
-            result = bool_a or bool_b
+            result = bool_a != bool_b  # XOR is true when values differ
             
             if result:
                 self.true_path = True
