@@ -3,7 +3,7 @@
 Decodes a Base64-encoded string into its original form.  
 Useful for decoding API responses, form submissions, or other base64-encoded data.
 
-## **Category:** Decode
+## **Category:** Encoding
 
 ## **Description**
 The **Decode Base64** node converts a Base64-encoded string (or byte input) into its original value.
@@ -15,9 +15,9 @@ It supports:
 
 ## **Variables**
 
-| Name    | Type  | Input | Output | Description |
-|---------|-------|-------|--------|-------------|
-| `value` | bytes | ✅     | ❌      | The base64-encoded value to decode. |
+| Name    | Type        | Input | Output | Description |
+|---------|-------------|-------|--------|-------------|
+| `value` | bytes \| str | ✅     | ❌      | The base64-encoded value to decode. |
 
 ## **Flow Control**
 

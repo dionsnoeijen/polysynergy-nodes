@@ -1,4 +1,6 @@
 import base64
+import os
+import asyncio
 
 from polysynergy_node_runner.setup_context.dock_property import dock_property
 from polysynergy_node_runner.setup_context.node import Node
@@ -78,15 +80,34 @@ class EmailAttachment(Node):
         info="Error if file could not be read or encoded"
     )
 
-    def execute(self):
+    async def execute(self):
         try:
-            with open(self.filepath, "rb") as f:
-                encoded = base64.b64encode(f.read()).decode("utf-8")
+            # Validate file exists and get size
+            if not os.path.exists(self.filepath):
+                raise FileNotFoundError(f"File not found: {self.filepath}")
+            
+            file_size = os.path.getsize(self.filepath)
+            max_size = 25 * 1024 * 1024  # 25MB limit
+            
+            if file_size > max_size:
+                raise ValueError(f"File too large: {file_size} bytes (max 25MB)")
+            
+            if file_size == 0:
+                raise ValueError("File is empty")
+            
+            # Read and encode file asynchronously
+            def _read_and_encode():
+                with open(self.filepath, "rb") as f:
+                    file_content = f.read()
+                return base64.b64encode(file_content).decode("utf-8")
+            
+            encoded = await asyncio.to_thread(_read_and_encode)
 
             self.true_path = {
                 "filename": self.filename,
                 "content": encoded,
-                "mimetype": self.mimetype
+                "mimetype": self.mimetype,
+                "size": file_size
             }
 
         except Exception as e:

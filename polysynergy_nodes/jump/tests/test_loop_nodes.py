@@ -1,13 +1,14 @@
 import unittest
+import asyncio
 from unittest.mock import MagicMock
 from polysynergy_nodes.jump.list_loop import ListLoop
 from polysynergy_nodes.jump.loop_end import LoopEnd
 
-class DummyFlow:
+class AsyncDummyFlow:
     def __init__(self):
         self.executed_nodes = []
 
-    def execute_node(self, node):
+    async def execute_node(self, node):
         self.executed_nodes.append(node)
 
     def get_node(self, node_id):
@@ -22,7 +23,7 @@ class TestListLoopIntegration(unittest.TestCase):
         loop_end_node = LoopEnd()
 
         # Mock de flow
-        flow = DummyFlow()
+        flow = AsyncDummyFlow()
         loop_node.flow = flow
 
         # Zorg dat loop_end_node geschikt is voor de test
@@ -33,7 +34,11 @@ class TestListLoopIntegration(unittest.TestCase):
         loop_node.find_nodes_in_loop = MagicMock(return_value=([], loop_end_node))
 
         loop_node.input_list = ["one", "two", "three"]
-        loop_node.execute()
+        
+        async def run_test():
+            await loop_node.execute()
+            
+        asyncio.run(run_test())
 
         # ✅ Assertions
         self.assertEqual(loop_node.index, 2)

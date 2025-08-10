@@ -3,7 +3,7 @@
 Encodes a raw value into Base64 format.  
 Useful for preparing data for transmission, storage, or embedding in text-based formats.
 
-## **Category:** Encode
+## **Category:** Encoding
 
 ## **Description**
 The **Encode Base64** node transforms a raw byte input into a Base64-encoded string.
@@ -15,9 +15,9 @@ It supports:
 
 ## **Variables**
 
-| Name    | Type  | Input | Output | Description |
-|---------|-------|-------|--------|-------------|
-| `value` | bytes | ✅     | ❌      | The raw value to encode in Base64. |
+| Name    | Type        | Input | Output | Description |
+|---------|-------------|-------|--------|-------------|
+| `value` | str \| bytes | ✅     | ❌      | The raw value to encode in Base64. |
 
 ## **Flow Control**
 
@@ -27,11 +27,12 @@ It supports:
 | `false_path` | Triggered if encoding fails. Contains an error dictionary. |
 
 ## **How It Works**
-1. Accepts raw input (`value`) in bytes format.
-2. Encodes it using Python’s built-in `base64.b64encode`.
-3. If successful:
+1. Accepts raw input (`value`) as either string or bytes.
+2. If input is a string, it's automatically converted to bytes using UTF-8 encoding.
+3. Encodes the bytes using Python's built-in `base64.b64encode`.
+4. If successful:
    - Emits the result as a Base64 string to `true_path`.
-4. If encoding fails:
+5. If encoding fails:
    - Sends a descriptive error to `false_path`.
 
 ---

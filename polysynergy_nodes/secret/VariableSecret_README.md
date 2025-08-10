@@ -47,6 +47,8 @@ This node does not take any inputs.
 - It outputs the secret key ID (`true_path`), which can be used in other nodes within the flow.
 - This node does not perform any action but is simply used to securely pass the secret key.
 - The secret key is predefined and should not be altered by the user.
+- **Async Execution**: This node uses asynchronous execution for consistency with the framework.
+- **Passthrough Behavior**: The execute method does not modify any state - it's a pure passthrough node.
 
 ---
 

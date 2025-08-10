@@ -7,9 +7,10 @@ Compares two values and returns true if the first value is larger than the secon
 - **Value A** (required): First value to compare
 - **Value B** (required): Second value to compare
 
-## Outputs
+## Flow Control
 
-- **Result**: Boolean value indicating whether Value A is larger than Value B
+- **True Path**: Triggered when Value A is larger than Value B. Contains the original value from input A.
+- **False Path**: Triggered when Value A is not larger than Value B. Contains the original value from input B.
 
 ## Behavior
 

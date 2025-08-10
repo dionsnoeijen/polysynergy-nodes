@@ -7,9 +7,10 @@ Compares two values for equality and returns true if they are equal, false other
 - **Value A** (required): First value to compare
 - **Value B** (required): Second value to compare
 
-## Outputs
+## Flow Control
 
-- **Result**: Boolean value indicating whether the values are equal
+- **True Path**: Triggered when values are equal. Contains the original value from input A.
+- **False Path**: Triggered when values are not equal. Contains the original value from input B.
 
 ## Behavior
 

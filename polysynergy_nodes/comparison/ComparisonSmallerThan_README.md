@@ -7,9 +7,10 @@ Compares two values and returns true if the first value is smaller than the seco
 - **Value A** (required): First value to compare
 - **Value B** (required): Second value to compare
 
-## Outputs
+## Flow Control
 
-- **Result**: Boolean value indicating whether Value A is smaller than Value B
+- **True Path**: Triggered when Value A is smaller than Value B. Contains the original value from input A.
+- **False Path**: Triggered when Value A is not smaller than Value B. Contains the original value from input B.
 
 ## Behavior
 

@@ -1,7 +1,7 @@
 
 # 🎲 Random Data Node
 
-The `Random Data` node is part of the **data** category and generates random data based on the selected type.
+The `Random Data` node is part of the **random** category and generates random data based on the selected type.
 
 ---
 
@@ -52,7 +52,9 @@ This node generates random data depending on the selected `type`. It supports ge
 
 ## ⚠️ Notes
 
-- The `type` input determines the kind of data that will be generated. If an unsupported type is provided, the node will output an error message via `false_path`.
+- The `type` input determines the kind of data that will be generated. If an unsupported type is provided, the node will output proper error information via `false_path`.
+- **Async Execution**: This node uses asynchronous execution for consistency with the framework.
+- **Error Handling**: All errors are properly formatted using `NodeError.format()` for consistent error reporting.
 - For number types (`int` and `float`), the `min` and `max` inputs define the range for random generation.
 - The `date` type generates a random date between 1 year ago and the current date, formatted in ISO format.
 - This node uses external libraries (`Faker` and `uuid`) to generate the data, so the results will vary on each execution.

@@ -14,9 +14,9 @@ class TestHttpResponseNode(unittest.TestCase):
         self.node.execute()
 
         self.assertIsNotNone(self.node.response)
-        self.assertEqual(self.node.response.headers["Content-Type"], "text/plain")
-        self.assertEqual(self.node.response.body, "Hello, world!")
-        self.assertEqual(self.node.response.http_status, HTTPStatus.CREATED.value)
+        self.assertEqual(self.node.response["headers"]["Content-Type"], "application/json")  # Default content_type overrides header
+        self.assertEqual(self.node.response["body"], "Hello, world!")
+        self.assertEqual(self.node.response["status"], HTTPStatus.CREATED.value)
 
     def test_response_with_bytes_body(self):
         self.node.headers = {"X-Test": "1"}
@@ -24,8 +24,8 @@ class TestHttpResponseNode(unittest.TestCase):
         self.node.http_status = 202
         self.node.execute()
 
-        self.assertEqual(self.node.response.body, b"binary data")
-        self.assertEqual(self.node.response.headers["X-Test"], "1")
+        self.assertEqual(self.node.response["body"], b"binary data")
+        self.assertEqual(self.node.response["headers"]["X-Test"], "1")
 
     def test_response_with_invalid_headers(self):
         self.node.headers = "not a dict"

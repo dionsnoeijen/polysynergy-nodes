@@ -1,7 +1,7 @@
 
 # 🎲 Random Path Node
 
-The `Random Path` node is part of the **flow** category and is used to randomly select one of the outgoing paths from a node and execute it. The node marks the unchosen paths as "killer" to effectively disable them, and the chosen path is executed, passing the relevant data through the flow.
+The `Random Path` node is part of the **random** category and is used to randomly select one of the outgoing paths from a node and execute it. The node marks the unchosen paths as "killer" to effectively disable them, and the chosen path is executed, passing the relevant data through the flow.
 
 ---
 
@@ -25,6 +25,7 @@ This node randomly selects one of the outgoing connections (`out_connections`) a
 | Name        | Type             | Description                                    |
 |-------------|------------------|------------------------------------------------|
 | true_path   | bool, int, float, str, list, dict | The path that was selected, or the path value that was passed from an incoming connection. |
+| false_path  | dict             | Error information if failure occurs           |
 
 ---
 
@@ -48,10 +49,12 @@ This node randomly selects one of the outgoing connections (`out_connections`) a
 
 ## ⚠️ Notes
 
-- If there are no outgoing connections (`out_connections` is empty), `true_path` will not be set.
+- If there are no outgoing connections (`out_connections` is empty), an error will be output via `false_path`.
 - If there are incoming connections, the `true_path` from the source node will be used. If no `true_path` is found, it defaults to `True`.
 - All unchosen outgoing paths are marked as "killer" using the `make_killer` method on the connections.
 - This node does not generate any data itself but simply controls the flow of execution based on a random selection.
+- **Async Execution**: This node uses asynchronous execution for consistency with the framework.
+- **Error Handling**: All errors are properly formatted using `NodeError.format()` for consistent error reporting.
 
 ---
 

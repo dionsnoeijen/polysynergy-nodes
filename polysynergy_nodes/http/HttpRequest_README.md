@@ -1,4 +1,4 @@
-⚠️ **Warning:** This node is functional but still under development. Improvements in error handling and flexibility are expected.
+✅ **Enhanced:** This node has been upgraded with async support for better performance and non-blocking HTTP operations.
 
 # HTTP Request
 
@@ -7,10 +7,17 @@ Sends a configurable HTTP request and returns the response.
 ## **Category:** http
 
 ## **Description**
-The **HTTP Request** node allows you to perform HTTP(S) requests using various methods (GET, POST, PUT, DELETE, etc.).  
+The **HTTP Request** node allows you to perform asynchronous HTTP(S) requests using various methods (GET, POST, PUT, DELETE, etc.).  
 It supports full control over all request parameters including headers, query strings, body, SSL options, and proxy configs.
 
 It also supports dynamic URL construction via placeholder replacement using the `url_variables` input.
+
+### **Key Features:**
+- **Async Operations:** Non-blocking HTTP requests for better performance
+- **Modern HTTP Client:** Uses `httpx` for reliable and efficient HTTP operations
+- **Flexible Configuration:** Support for all HTTP methods, headers, and options
+- **Dynamic URLs:** Placeholder replacement for parameterized requests
+- **Error Handling:** Structured error responses with detailed information
 
 ## **Variables**
 

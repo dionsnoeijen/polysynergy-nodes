@@ -5,7 +5,8 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 @node(
     name="Secret",
     category="hidden",
-    icon="lock.svg"
+    icon="lock.svg",
+    version=1.0
 )
 class VariableSecret(Node):
     true_path: bool | str = PathSettings(
@@ -13,5 +14,5 @@ class VariableSecret(Node):
         info="The full secret id"
     )
 
-    def execute(self):
+    async def execute(self):
         pass

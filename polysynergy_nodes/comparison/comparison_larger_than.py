@@ -2,7 +2,7 @@ from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
 
-@node(name="Larger than", category="comparison", type="larger_than")
+@node(name="Larger than", category="comparison", type="larger_than", icon="comparison.svg")
 class ComparisonLargerThan(Node):
     a: int | float | str = NodeVariableSettings(default=0, has_in=True, dock=True, has_out=True)
     b: int | float | str = NodeVariableSettings(default=0, has_in=True, dock=True, has_out=True)

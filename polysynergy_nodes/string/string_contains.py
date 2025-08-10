@@ -9,7 +9,8 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 @node(
     name="String Contains",
     category="string",
-    icon='string.svg'
+    icon='string.svg',
+    version=1.0
 )
 class StringContains(Node):
     text: str = NodeVariableSettings(
@@ -42,7 +43,7 @@ class StringContains(Node):
         info="Error information if inputs are invalid"
     )
 
-    def execute(self):
+    async def execute(self):
         if not isinstance(self.text, str):
             self.false_path = NodeError.format(ValueError("Text must be a string"))
             self.true_path = False

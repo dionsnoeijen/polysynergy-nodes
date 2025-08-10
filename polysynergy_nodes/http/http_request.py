@@ -1,9 +1,6 @@
-# PACKAGE RECOMMENDATION: Move to @polysynergy/web
-# This node provides HTTP client functionality with external network dependencies.
-# It would be better suited in a dedicated web/network package rather than core basic nodes.
-
 import json
-import requests
+import asyncio
+import httpx
 from http import HTTPMethod
 
 from polysynergy_node_runner.execution_context.replace_placeholders import replace_placeholders
@@ -48,22 +45,15 @@ class HttpRequest(Node):
     true_path: bool | str = PathSettings(label="Success (Response Body)")
     false_path: bool | dict = PathSettings(label="Error (Exception or HTTP Error)")
 
-    def execute(self):
+    async def execute(self):
         try:
-            print(f"URL Variables: {self.url_variables}")
-
             replaced_url_vars = replace_placeholders(
                 data=self.url_variables,
                 values=self.url_variables,
                 state=self.state
             )
 
-            print(f"Replaced URL Variables: {replaced_url_vars}")
-
             replaced_url = replace_placeholders(data=self.url, values=replaced_url_vars, state=self.state)
-
-            print(f"URL: {self.url}")
-            print(f"Replaced URL: {replaced_url}")
 
             replaced_headers = replace_placeholders(data=self.headers, values=replaced_url_vars, state=self.state)
             replaced_query = replace_placeholders(data=self.query, values=replaced_url_vars, state=self.state)
@@ -90,16 +80,17 @@ class HttpRequest(Node):
                 try:
                     kwargs["json"] = json.loads(replaced_body) if isinstance(replaced_body, str) else replaced_body
                 except Exception:
-                    kwargs["data"] = replaced_body  # fallback
+                    kwargs["content"] = replaced_body  # fallback
             else:
-                kwargs["data"] = replaced_body
+                kwargs["content"] = replaced_body
 
-            response = requests.request(**kwargs)
+            async with httpx.AsyncClient() as client:
+                response = await client.request(**kwargs)
 
             self.response_http_status = response.status_code
             self.response_body = response.text
             self.response_headers = dict(response.headers)
-            self.response_cookies = requests.utils.dict_from_cookiejar(response.cookies)
+            self.response_cookies = dict(response.cookies)
             self.response_elapsed = response.elapsed.total_seconds()
 
             if response.status_code < 400:
@@ -107,5 +98,5 @@ class HttpRequest(Node):
             else:
                 self.false_path = {"error": f"{response.status_code}: {response.text}"}
 
-        except requests.RequestException as e:
+        except httpx.RequestError as e:
             self.false_path = NodeError.format(e)

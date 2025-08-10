@@ -3,7 +3,7 @@ from polysynergy_node_runner.setup_context.node_decorator import node
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
 
 
-@node(name="Smaller than", category="comparison", type="smaller_than")
+@node(name="Smaller than", category="comparison", type="smaller_than", icon="comparison.svg")
 class ComparisonSmallerThan(Node):
 
     a: int | float | str = NodeVariableSettings(default=0, has_in=True, has_out=True, dock=True)

@@ -6,7 +6,7 @@ from polysynergy_node_runner.setup_context.node_variable_settings import NodeVar
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
 
-@node(name="Encode Base64", category="encoding")
+@node(name="Encode Base64", category="encoding", icon="base64.svg")
 class EncodeBase64(Node):
 
     value: str | bytes = NodeVariableSettings(label="Value", dock=True, has_in=True)

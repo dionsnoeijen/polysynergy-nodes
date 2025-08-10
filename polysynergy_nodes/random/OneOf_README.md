@@ -1,7 +1,7 @@
 
 # 🎲 One Of Node
 
-The `One Of` node is part of the **data** category and randomly selects one value from a list of provided values.
+The `One Of` node is part of the **random** category and randomly selects one value from a list of provided values.
 
 ---
 
@@ -60,3 +60,5 @@ This node randomly selects one value from the provided list `values`. It uses th
 - The `values` input must be a non-empty list. If it is an empty list or not a list at all, an error will be generated and output via `false_path`.
 - This node can handle any data type within the list (integers, strings, floats, etc.).
 - The node does not process the data but simply returns one value from the list, chosen randomly.
+- **Async Execution**: This node uses asynchronous execution for consistency with the framework.
+- **Error Handling**: All errors are properly formatted using `NodeError.format()` for consistent error reporting.

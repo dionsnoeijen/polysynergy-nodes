@@ -5,7 +5,8 @@ from polysynergy_node_runner.setup_context.node_variable_settings import NodeVar
 @node(
     name="Not Equal",
     category="comparison",
-    type="not_equal"
+    type="not_equal",
+    icon="comparison.svg"
 )
 class ComparisonNotEqual(Node):
     a: bool | str | int | float = NodeVariableSettings(default=0, dock=True, has_in=True, has_out=True)

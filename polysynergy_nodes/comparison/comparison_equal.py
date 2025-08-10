@@ -2,7 +2,7 @@ from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
 
-@node(name="Equal", category="comparison", type="equal")
+@node(name="Equal", category="comparison", type="equal", icon="comparison.svg")
 class ComparisonEqual(Node):
     a: bool | str | int | float = NodeVariableSettings(default=0, dock=True, has_in=True, has_out=True)
     b: bool | str | int | float = NodeVariableSettings(default=0, dock=True, has_in=True, has_out=True)

@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 from unittest.mock import MagicMock
 from polysynergy_nodes.random.random_path import RandomPath
@@ -9,6 +10,7 @@ class TestRandomPathNode(unittest.TestCase):
     def setUp(self):
         self.node = RandomPath()
         self.node.true_path = False
+        self.node.false_path = False
         self.node.state = MagicMock()  # Mock state for the node
         self.node.state.get_node_by_id = MagicMock()  # Mock get_node_by_id
         self.node.out_connections = []
@@ -16,13 +18,13 @@ class TestRandomPathNode(unittest.TestCase):
 
     def test_no_connections(self):
         self.node.out_connections = []  # No outgoing connections
-        self.node.execute()
-        self.assertIsNone(self.node.true_path)  # If there are no connections, true_path should be None
+        asyncio.run(self.node.execute())
+        self.assertIsNotNone(self.node.false_path)  # Should have error in false_path
 
     def test_single_connection(self):
         connection = MagicMock(spec=Connection)
         self.node.out_connections = [connection]  # Single outgoing connection
-        self.node.execute()
+        asyncio.run(self.node.execute())
         self.assertTrue(self.node.true_path)  # If there's one connection, it should take that path
 
     # Temporarily skipping the test for multiple connections
@@ -49,7 +51,7 @@ class TestRandomPathNode(unittest.TestCase):
         source_node.true_path = "some_value"
         self.node.state.get_node_by_id = MagicMock(return_value=source_node)
 
-        self.node.execute()
+        asyncio.run(self.node.execute())
         self.assertEqual(self.node.true_path, "some_value")  # true_path should be set from the source node
 
     def test_incoming_connections_no_true_path(self):
@@ -61,7 +63,7 @@ class TestRandomPathNode(unittest.TestCase):
         source_node = MagicMock()
         self.node.state.get_node_by_id = MagicMock(return_value=source_node)
 
-        self.node.execute()
+        asyncio.run(self.node.execute())
         self.assertTrue(self.node.true_path)  # Default to True if no true_path is present on source node
 
 if __name__ == "__main__":
