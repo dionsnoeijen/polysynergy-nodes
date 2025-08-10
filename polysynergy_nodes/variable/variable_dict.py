@@ -7,7 +7,7 @@ from polysynergy_node_runner.setup_context.node_variable_settings import NodeVar
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
 
-@node(name="Variable Dict", category="variable")
+@node(name="Variable Dict", category="variable", version=1.0)
 class VariableDict(Node):
     value: dict[str, any] = NodeVariableSettings(label="Value", dock=True, has_out=True)
     value_as_json_string: str = NodeVariableSettings(label="Value as Json String", has_out=True)
@@ -15,7 +15,7 @@ class VariableDict(Node):
     true_path: bool | dict = PathSettings(label="Dict", info="The value is a valid JSON string with placeholders replaced")
     false_path: bool | dict = PathSettings(label="Error")
 
-    def execute(self):
+    async def execute(self):
         try:
             self.value_as_json_string = json.dumps(self.value)
 

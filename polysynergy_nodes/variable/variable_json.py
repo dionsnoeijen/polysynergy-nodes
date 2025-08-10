@@ -13,7 +13,7 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
     name="Variable Json",
     category="variable",
     icon='json.svg',
-    version=1.01,
+    version=1.0
 )
 class VariableJson(Node):
     value: str | dict | list = NodeVariableSettings(
@@ -29,7 +29,7 @@ class VariableJson(Node):
     true_path: bool | str = PathSettings(label="Json String", info="The value is a valid JSON string with placeholders replaced")
     false_path: bool | dict = PathSettings(label="Error")
 
-    def execute(self):
+    async def execute(self):
         try:
             self.values = replace_placeholders(data=self.values, values=self.values, state=self.state)
             self.append = replace_placeholders(data=self.append, values=self.values, state=self.state)

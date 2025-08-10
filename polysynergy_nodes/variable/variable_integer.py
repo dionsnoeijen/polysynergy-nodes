@@ -3,9 +3,9 @@ from polysynergy_node_runner.setup_context.node_decorator import node
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
 
 
-@node(name="Variable Integer", category="variable")
+@node(name="Variable Integer", category="variable", version=1.0)
 class VariableInteger(Node):
     value: int = NodeVariableSettings(label="Value", dock=True, has_out=True)
 
-    def execute(self):
+    async def execute(self):
         return self.value

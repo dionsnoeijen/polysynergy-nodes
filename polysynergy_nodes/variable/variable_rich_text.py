@@ -4,6 +4,7 @@ from polysynergy_node_runner.execution_context.replace_placeholders import repla
 from polysynergy_node_runner.setup_context.dock_property import dock_text_area
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.node_error import NodeError
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
@@ -12,7 +13,7 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
     name="Variable Rich Text",
     category="variable",
     icon='string.svg',
-    version=1.02
+    version=1.0
 )
 class VariableRichText(Node):
     value: str = NodeVariableSettings(label="Value", dock=dock_text_area(rich=True), has_in=True)
@@ -21,18 +22,17 @@ class VariableRichText(Node):
     true_path: bool | str = PathSettings(label="Result", info="The value with placeholders replaced")
     false_path: bool | dict = PathSettings(label="Error", info="If the placeholder replacement fails")
 
-    def execute(self):
-        if not isinstance(self.value, str):
-            raise ValueError("VariableString: Value must be a string")
-
-        if not isinstance(self.values, dict):
-            self.values = {}
-
-        if self.value.strip() == "":
-            self.true_path = ""
-            return
-
+    async def execute(self):
         try:
+            if not isinstance(self.value, str):
+                raise ValueError("VariableString: Value must be a string")
+
+            if not isinstance(self.values, dict):
+                self.values = {}
+
+            if self.value.strip() == "":
+                self.true_path = ""
+                return
             replaced_values = replace_placeholders(
                 data=self.values,
                 values=self.values,
@@ -44,6 +44,6 @@ class VariableRichText(Node):
                 values=replaced_values,
                 state=self.state
             )
-        except ValueError as e:
-            self.false_path = {"error": str(e)}
+        except Exception as e:
+            self.false_path = NodeError.format(str(e))
             self.true_path = False

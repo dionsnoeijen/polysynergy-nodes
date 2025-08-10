@@ -13,27 +13,26 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
     name="Variable String",
     category="variable",
     icon='string.svg',
-    version=1.02
+    version=1.0
 )
 class VariableString(Node):
     value: str = NodeVariableSettings(label="Value", dock=dock_text_area(), has_in=True)
-    values: dict[str, str] = NodeVariableSettings(label="Values", dock=True, has_in=True, has_out=True)
+    values: dict[str, str] = NodeVariableSettings(label="Values", dock=True, has_in=True)
 
     true_path: bool | str = PathSettings(label="Result", info="The value with placeholders replaced")
     false_path: bool | dict = PathSettings(label="Error", info="If the placeholder replacement fails")
 
-    def execute(self):
-        if not isinstance(self.value, str):
-            raise ValueError("VariableString: Value must be a string")
-
-        if not isinstance(self.values, dict):
-            self.values = {}
-
-        if self.value.strip() == "":
-            self.true_path = ""
-            return
-
+    async def execute(self):
         try:
+            if not isinstance(self.value, str):
+                raise ValueError("VariableString: Value must be a string")
+
+            if not isinstance(self.values, dict):
+                self.values = {}
+
+            if self.value.strip() == "":
+                self.true_path = ""
+                return
             replaced_values = replace_placeholders(
                 data=self.values,
                 values=self.values,
@@ -45,6 +44,6 @@ class VariableString(Node):
                 values=replaced_values,
                 state=self.state
             )
-        except ValueError as e:
-            self.false_path = NodeError.format(e)
+        except Exception as e:
+            self.false_path = NodeError.format(str(e))
             self.true_path = False

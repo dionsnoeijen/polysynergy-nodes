@@ -9,7 +9,8 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 @node(
     name="Variable List",
     category="variable",
-    icon='list.svg'
+    icon='list.svg',
+    version=1.0
 )
 class VariableList(Node):
     value: list = NodeVariableSettings(
@@ -27,7 +28,7 @@ class VariableList(Node):
 
     true_path: bool | list = PathSettings(label="List")
 
-    def execute(self):
+    async def execute(self):
         if self.append:
             self.value.append(self.append)
 
