@@ -1,5 +1,4 @@
 import json
-import asyncio
 import httpx
 from http import HTTPMethod
 
@@ -7,7 +6,6 @@ from polysynergy_node_runner.execution_context.replace_placeholders import repla
 from polysynergy_node_runner.setup_context.dock_property import dock_property, dock_text_area
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
-from polysynergy_node_runner.setup_context.node_error import NodeError
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
@@ -32,7 +30,13 @@ class HttpRequest(Node):
     query: dict[str, str] = NodeVariableSettings(label="Query", dock=True, has_in=True)
     cookies: dict[str, str] = NodeVariableSettings(label="Cookies", dock=True, has_in=True)
     timeout: float = NodeVariableSettings(label="Timeout", dock=True, has_in=True, default=10.0)
-    allow_redirects: bool = NodeVariableSettings(label="Allow Redirects", dock=True, has_in=True, default=True)
+    follow_redirects: bool = NodeVariableSettings(
+        label="Follow Redirects", 
+        dock=True, 
+        has_in=True, 
+        default=True,
+        info="When enabled, automatically follows HTTP redirect responses (3xx status codes). When disabled, redirect responses are returned as-is without following them."
+    )
     verify_ssl: bool = NodeVariableSettings(label="Verify SSL", dock=True, has_in=True, default=True)
     proxies: dict | None = NodeVariableSettings(label="Proxies", dock=True, has_in=True, default=None)
 
@@ -71,10 +75,15 @@ class HttpRequest(Node):
                 "params": replaced_query,
                 "cookies": replaced_cookies,
                 "timeout": self.timeout,
-                "allow_redirects": self.allow_redirects,
-                "verify": self.verify_ssl,
-                "proxies": self.proxies,
+                "follow_redirects": self.follow_redirects,
             }
+            
+            # Create client with SSL verification setting
+            client_kwargs = {
+                "verify": self.verify_ssl,
+            }
+            if self.proxies:
+                client_kwargs["proxies"] = self.proxies
 
             if is_json:
                 try:
@@ -84,7 +93,7 @@ class HttpRequest(Node):
             else:
                 kwargs["content"] = replaced_body
 
-            async with httpx.AsyncClient() as client:
+            async with httpx.AsyncClient(**client_kwargs) as client:
                 response = await client.request(**kwargs)
 
             self.response_http_status = response.status_code
@@ -98,5 +107,10 @@ class HttpRequest(Node):
             else:
                 self.false_path = {"error": f"{response.status_code}: {response.text}"}
 
-        except httpx.RequestError as e:
-            self.false_path = NodeError.format(e)
+        except Exception as e:
+            error_msg = f"{type(e).__name__}: {str(e)}"
+            self.false_path = {
+                "error": error_msg,
+                "error_type": type(e).__name__,
+                "details": str(e)
+            }

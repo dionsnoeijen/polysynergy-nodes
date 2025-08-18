@@ -23,7 +23,7 @@ class TestHttpRequestNode(unittest.TestCase):
         self.node.query = {}
         self.node.cookies = {}
         self.node.timeout = 10
-        self.node.allow_redirects = True
+        self.node.follow_redirects = True
         self.node.verify_ssl = True
         self.node.proxies = None
 
@@ -39,6 +39,20 @@ class TestHttpRequestNode(unittest.TestCase):
         mock_client.request.return_value = mock_response
 
         asyncio.run(self.node.execute())
+
+        # Verify the correct parameters were passed to httpx
+        mock_client.request.assert_called_once()
+        call_args = mock_client.request.call_args
+        self.assertIn('follow_redirects', call_args.kwargs)
+        self.assertEqual(call_args.kwargs['follow_redirects'], True)
+        self.assertNotIn('allow_redirects', call_args.kwargs)
+        self.assertNotIn('verify', call_args.kwargs)  # verify should be in client constructor, not request
+        
+        # Verify client was created with correct SSL verification
+        mock_client_class.assert_called_once()
+        client_init_args = mock_client_class.call_args
+        self.assertIn('verify', client_init_args.kwargs)
+        self.assertEqual(client_init_args.kwargs['verify'], True)
 
         self.assertEqual(self.node.true_path, "OK")
         self.assertEqual(self.node.response_http_status, 200)
@@ -58,7 +72,7 @@ class TestHttpRequestNode(unittest.TestCase):
         self.node.query = {}
         self.node.cookies = {}
         self.node.timeout = 10
-        self.node.allow_redirects = True
+        self.node.follow_redirects = True
         self.node.verify_ssl = True
         self.node.proxies = None
 
@@ -89,7 +103,7 @@ class TestHttpRequestNode(unittest.TestCase):
         self.node.query = {}
         self.node.cookies = {}
         self.node.timeout = 10
-        self.node.allow_redirects = True
+        self.node.follow_redirects = True
         self.node.verify_ssl = True
         self.node.proxies = None
 
@@ -107,6 +121,36 @@ class TestHttpRequestNode(unittest.TestCase):
         asyncio.run(self.node.execute())
 
         self.assertEqual(self.node.true_path, "Fallback OK")
+
+    @patch("polysynergy_nodes.http.http_request.httpx.AsyncClient")
+    def test_request_exception_with_detailed_error(self, mock_client_class):
+        self.node.url = "https://example.com"
+        self.node.url_variables = {}
+        self.node.method = "GET"
+        self.node.headers = {}
+        self.node.body = ""
+        self.node.query = {}
+        self.node.cookies = {}
+        self.node.timeout = 10
+        self.node.follow_redirects = True
+        self.node.verify_ssl = True
+        self.node.proxies = None
+
+        mock_client = AsyncMock()
+        mock_client_class.return_value.__aenter__.return_value = mock_client
+        
+        # Simulate an exception during request
+        mock_client.request.side_effect = Exception("Connection failed")
+
+        asyncio.run(self.node.execute())
+
+        # Verify detailed error information is set in false_path
+        self.assertIsInstance(self.node.false_path, dict)
+        self.assertIn("error", self.node.false_path)
+        self.assertIn("error_type", self.node.false_path)
+        self.assertIn("details", self.node.false_path)
+        self.assertEqual(self.node.false_path["error_type"], "Exception")
+        self.assertIn("Connection failed", self.node.false_path["details"])
 
 if __name__ == "__main__":
     unittest.main()
