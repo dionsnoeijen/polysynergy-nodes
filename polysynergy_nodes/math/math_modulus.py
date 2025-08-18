@@ -12,7 +12,7 @@ class MathModulus(Node):
     true_path: bool | int | float = False
     false_path: bool | dict = False
 
-    def execute(self):
+    async def execute(self):
         try:
             a_val = to_number(self.a)
             b_val = to_number(self.b)

@@ -24,8 +24,12 @@ class VariableString(Node):
 
     async def execute(self):
         try:
-            if not isinstance(self.value, str):
-                raise ValueError("VariableString: Value must be a string")
+            # Convert value to string if it's not already
+            if self.value is None:
+                self.value = ""
+            elif not isinstance(self.value, str):
+                # Try to convert to string - this will work for numbers, booleans, etc.
+                self.value = str(self.value)
 
             if not isinstance(self.values, dict):
                 self.values = {}
@@ -45,5 +49,5 @@ class VariableString(Node):
                 state=self.state
             )
         except Exception as e:
-            self.false_path = NodeError.format(str(e))
+            self.false_path = NodeError.format(e)
             self.true_path = False

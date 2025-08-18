@@ -12,7 +12,7 @@ class MathCeil(Node):
     true_path: bool | int = False
     false_path: bool | dict = False
 
-    def execute(self):
+    async def execute(self):
         try:
             val = to_number(self.value)
             if val is None:

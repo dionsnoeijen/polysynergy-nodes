@@ -1,5 +1,6 @@
 import unittest
 from http import HTTPStatus
+import asyncio
 from polysynergy_nodes.http.http_response import HttpResponse
 
 class TestHttpResponseNode(unittest.TestCase):
@@ -11,7 +12,7 @@ class TestHttpResponseNode(unittest.TestCase):
         self.node.headers = {"Content-Type": "text/plain"}
         self.node.body = "Hello, world!"
         self.node.http_status = HTTPStatus.CREATED.value
-        self.node.execute()
+        asyncio.run(self.node.execute())
 
         self.assertIsNotNone(self.node.response)
         self.assertEqual(self.node.response["headers"]["Content-Type"], "application/json")  # Default content_type overrides header
@@ -22,7 +23,7 @@ class TestHttpResponseNode(unittest.TestCase):
         self.node.headers = {"X-Test": "1"}
         self.node.body = b"binary data"
         self.node.http_status = 202
-        self.node.execute()
+        asyncio.run(self.node.execute())
 
         self.assertEqual(self.node.response["body"], b"binary data")
         self.assertEqual(self.node.response["headers"]["X-Test"], "1")
@@ -32,7 +33,7 @@ class TestHttpResponseNode(unittest.TestCase):
         self.node.body = "oops"
         self.node.http_status = 200
 
-        self.node.execute()
+        asyncio.run(self.node.execute())
         self.assertIsInstance(self.node.response, object)
 
 if __name__ == "__main__":

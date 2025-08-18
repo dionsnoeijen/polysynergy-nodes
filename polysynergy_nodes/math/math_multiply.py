@@ -13,7 +13,7 @@ class MathMultiply(Node):
     true_path: bool | float = PathSettings(label="Result")
     false_path: bool | dict = PathSettings(label="Error")
 
-    def execute(self):
+    async def execute(self):
         try:
             a = to_number(self.a)
             b = to_number(self.b)

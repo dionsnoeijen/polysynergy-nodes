@@ -1,3 +1,4 @@
+import asyncio
 import unittest
 from polysynergy_nodes.math.math_clamp import MathClamp
 
@@ -11,7 +12,7 @@ class TestMathClampNode(unittest.TestCase):
         self.node.value = 50
         self.node.min_value = 0
         self.node.max_value = 100
-        self.node.execute()
+        asyncio.run(self.node.execute())
         self.assertEqual(self.node.true_path, 50)
         self.assertFalse(self.node.false_path)
 
@@ -19,7 +20,7 @@ class TestMathClampNode(unittest.TestCase):
         self.node.value = -10
         self.node.min_value = 0
         self.node.max_value = 100
-        self.node.execute()
+        asyncio.run(self.node.execute())
         self.assertEqual(self.node.true_path, 0)
         self.assertFalse(self.node.false_path)
 
@@ -27,7 +28,7 @@ class TestMathClampNode(unittest.TestCase):
         self.node.value = 150
         self.node.min_value = 0
         self.node.max_value = 100
-        self.node.execute()
+        asyncio.run(self.node.execute())
         self.assertEqual(self.node.true_path, 100)
         self.assertFalse(self.node.false_path)
 
@@ -35,7 +36,7 @@ class TestMathClampNode(unittest.TestCase):
         self.node.value = "75"
         self.node.min_value = "50"
         self.node.max_value = "100"
-        self.node.execute()
+        asyncio.run(self.node.execute())
         self.assertEqual(self.node.true_path, 75)
         self.assertFalse(self.node.false_path)
 
@@ -43,7 +44,7 @@ class TestMathClampNode(unittest.TestCase):
         self.node.value = "abc"
         self.node.min_value = 0
         self.node.max_value = 100
-        self.node.execute()
+        asyncio.run(self.node.execute())
         self.assertFalse(self.node.true_path)
         self.assertIn("error", self.node.false_path)
 

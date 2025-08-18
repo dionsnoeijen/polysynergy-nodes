@@ -1,6 +1,7 @@
 from http import HTTPStatus
 import logging
 
+from polysynergy_node_runner.execution_context.replace_placeholders import replace_placeholders
 from polysynergy_node_runner.setup_context.dock_property import dock_property, dock_text_area
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
@@ -50,10 +51,31 @@ class HttpResponse(Node):
 
     response: dict | None = None
 
-    def execute(self):
+    async def execute(self):
         try:
-            merged_headers: dict[str, str] = dict(self.headers or {})
+            # Replace placeholders in headers
+            self.headers = replace_placeholders(
+                data=self.headers or {},
+                values={},
+                state=self.state
+            )
 
+            # Replace placeholders in content_type
+            self.content_type = replace_placeholders(
+                data=self.content_type,
+                values={},
+                state=self.state
+            )
+
+            # Replace placeholders in body (only if it's not bytes)
+            if not isinstance(self.body, bytes):
+                self.body = replace_placeholders(
+                    data=self.body,
+                    values={},
+                    state=self.state
+                )
+
+            merged_headers: dict[str, str] = dict(self.headers)
             if self.content_type:
                 merged_headers["Content-Type"] = self.content_type
 

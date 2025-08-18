@@ -13,7 +13,7 @@ class MathClamp(Node):
     true_path: bool | int | float = False
     false_path: bool | dict = False
 
-    def execute(self):
+    async def execute(self):
         try:
             val = to_number(self.value)
             min_val = to_number(self.min_value)
