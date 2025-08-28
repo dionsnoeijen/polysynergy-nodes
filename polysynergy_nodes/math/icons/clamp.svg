@@ -1,0 +1,7 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Clamp notation with brackets and limits -->
+  <path d="M6 8V6H8M6 16V18H8M16 8V6H18M16 16V18H18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <text x="12" y="16" text-anchor="middle" font-size="8" font-family="serif" fill="currentColor">x</text>
+  <text x="4" y="12" text-anchor="middle" font-size="6" font-family="serif" fill="currentColor">min</text>
+  <text x="20" y="12" text-anchor="middle" font-size="6" font-family="serif" fill="currentColor">max</text>
+</svg>

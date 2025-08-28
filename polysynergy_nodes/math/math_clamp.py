@@ -4,7 +4,7 @@ from polysynergy_node_runner.setup_context.node_variable_settings import NodeVar
 from polysynergy_node_runner.setup_context.node_error import NodeError
 from polysynergy_nodes.math.utils.to_number import to_number
 
-@node(name="Clamp", category="math", type="clamp")
+@node(name="Clamp", category="math", type="clamp", icon="clamp.svg")
 class MathClamp(Node):
     value: int | float | str = NodeVariableSettings(default=0, has_in=True, has_out=True)
     min_value: int | float | str = NodeVariableSettings(default=0, has_in=True, has_out=True)

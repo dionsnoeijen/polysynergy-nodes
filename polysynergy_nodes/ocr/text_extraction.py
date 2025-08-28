@@ -64,7 +64,8 @@ class TextExtraction(Node):
         dock=dock_property(select_values={
             "auto": "Auto (Best for File Type)",
             "easyocr": "EasyOCR (Images)",
-            "pymupdf": "PyMuPDF (PDF Text)"
+            "pymupdf": "PyMuPDF (PDF Text)",
+            "textract": "AWS Textract (Cloud OCR)"
         }),
         default="auto",
         has_in=True,
@@ -229,16 +230,22 @@ class TextExtraction(Node):
         return mapping.get(content_type.lower(), ".png")
 
     def _choose_engine(self, file_extension: str) -> str:
-        """Choose the best OCR engine based on file type"""
+        """Choose the best OCR engine based on file type and environment"""
         if self.engine != "auto":
             return self.engine
         
-        # PDF files: try PyMuPDF first for text-based PDFs, fallback to EasyOCR
+        # Check if running in Lambda environment
+        is_lambda = os.environ.get('AWS_LAMBDA_FUNCTION_NAME') is not None
+        
+        # PDF files: Always use PyMuPDF for text-based PDFs (lightweight)
         if file_extension == ".pdf":
             return "pymupdf"
         
-        # For all other files (images), use EasyOCR
-        return "easyocr"
+        # For images: Use cloud OCR in Lambda, local OCR in development
+        if is_lambda:
+            return "textract"  # Use AWS Textract in Lambda (no heavy dependencies)
+        else:
+            return "easyocr"   # Use EasyOCR locally (full ML capability)
 
 
     async def _extract_text(self, file_content: bytes, file_extension: str, engine: str) -> dict:
@@ -251,6 +258,8 @@ class TextExtraction(Node):
                 result = await self._extract_with_easyocr(file_content, file_extension)
             elif engine == "pymupdf":
                 result = await self._extract_with_pymupdf(file_content, file_extension)
+            elif engine == "textract":
+                result = await self._extract_with_textract(file_content, file_extension)
             else:
                 raise ValueError(f"Unsupported engine: {engine}")
             
@@ -262,9 +271,15 @@ class TextExtraction(Node):
 
     async def _extract_with_easyocr(self, file_content: bytes, file_extension: str) -> dict:
         """Extract text using EasyOCR"""
-        import easyocr
-        import numpy as np
-        from PIL import Image
+        try:
+            import easyocr
+            import numpy as np
+            from PIL import Image
+        except ImportError as e:
+            raise ImportError(
+                f"EasyOCR dependencies not available: {e}. "
+                "In Lambda environment, 'textract' engine is automatically used instead."
+            )
         
         # Initialize reader (this might be slow on first run)
         reader = easyocr.Reader([self.language], gpu=False)
@@ -329,4 +344,65 @@ class TextExtraction(Node):
             "confidence": 1.0,  # Text-based PDFs are highly reliable
             "page_count": len(doc)
         }
+
+    async def _extract_with_textract(self, file_content: bytes, file_extension: str) -> dict:
+        """Extract text using AWS Textract (cloud OCR service)"""
+        import boto3
+        from botocore.exceptions import ClientError, NoCredentialsError
+        
+        try:
+            # Initialize Textract client
+            textract = boto3.client('textract')
+            
+            # Check file size (Textract has limits)
+            if len(file_content) > 10 * 1024 * 1024:  # 10MB limit for synchronous calls
+                raise ValueError("File too large for Textract synchronous processing (max 10MB)")
+            
+            # Call Textract
+            if file_extension == ".pdf":
+                response = textract.detect_document_text(
+                    Document={'Bytes': file_content}
+                )
+            else:
+                # For images
+                response = textract.detect_document_text(
+                    Document={'Bytes': file_content}
+                )
+            
+            # Extract text from response
+            text_parts = []
+            confidences = []
+            
+            for block in response.get('Blocks', []):
+                if block['BlockType'] == 'LINE':
+                    text_parts.append(block['Text'])
+                    confidences.append(block.get('Confidence', 95.0) / 100.0)
+            
+            extracted_text = '\n'.join(text_parts)
+            avg_confidence = sum(confidences) / len(confidences) if confidences else 0.95
+            
+            return {
+                "text": extracted_text,
+                "confidence": avg_confidence,
+                "language": self.language,
+                "page_count": 1  # Textract processes one page at a time for sync calls
+            }
+            
+        except NoCredentialsError:
+            raise Exception(
+                "AWS credentials not configured. Please ensure AWS credentials are available "
+                "for Textract OCR in Lambda environment."
+            )
+        except ClientError as e:
+            error_code = e.response['Error']['Code']
+            if error_code == 'InvalidParameterException':
+                raise Exception(f"Invalid file format for Textract: {file_extension}")
+            elif error_code == 'DocumentTooLargeException':
+                raise Exception("Document too large for Textract")
+            elif error_code == 'UnsupportedDocumentException':
+                raise Exception(f"Unsupported document type for Textract: {file_extension}")
+            else:
+                raise Exception(f"Textract error: {e}")
+        except Exception as e:
+            raise Exception(f"AWS Textract extraction failed: {str(e)}")
 

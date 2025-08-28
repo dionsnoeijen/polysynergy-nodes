@@ -5,7 +5,7 @@ from polysynergy_node_runner.setup_context.node_variable_settings import NodeVar
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
 from polysynergy_node_runner.setup_context.node_error import NodeError
 
-@node(name="Average", category="math", version=1.0)
+@node(name="Average", category="math", version=1.0, icon="average.svg")
 class Average(Node):
     values: Union[List, str] = NodeVariableSettings(label="Values", dock=True, has_in=True, has_out=False, info="List of numbers or comma-separated string")
     

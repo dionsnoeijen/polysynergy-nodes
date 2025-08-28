@@ -5,7 +5,7 @@ from polysynergy_node_runner.setup_context.node_variable_settings import NodeVar
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
 from polysynergy_node_runner.setup_context.node_error import NodeError
 
-@node(name="Count", category="math", version=1.0)
+@node(name="Count", category="math", version=1.0, icon="count.svg")
 class Count(Node):
     values: Union[List, str, dict] = NodeVariableSettings(label="Values", dock=True, has_in=True, has_out=False, info="List, string, or dict to count")
     

@@ -20,7 +20,7 @@ class HttpResponse(Node):
         label="Headers", dock=True, has_in=True
     )
 
-    body: bytes | str = NodeVariableSettings(
+    body: bytes | str | int | float | bool = NodeVariableSettings(
         label="Body", dock=dock_text_area(), has_in=True
     )
 

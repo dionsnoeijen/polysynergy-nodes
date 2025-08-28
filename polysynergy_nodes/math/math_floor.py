@@ -5,7 +5,7 @@ from polysynergy_node_runner.setup_context.node_variable_settings import NodeVar
 from polysynergy_node_runner.setup_context.node_error import NodeError
 from polysynergy_nodes.math.utils.to_number import to_number
 
-@node(name="Floor", category="math", type="floor")
+@node(name="Floor", category="math", type="floor", icon="floor.svg")
 class MathFloor(Node):
     value: int | float | str = NodeVariableSettings(default=0, has_in=True, has_out=True)
 
