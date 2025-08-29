@@ -1,5 +1,3 @@
-import json
-
 from polysynergy_node_runner.execution_context.replace_placeholders import replace_placeholders
 from polysynergy_node_runner.setup_context.dock_property import dock_text_area
 from polysynergy_node_runner.setup_context.node import Node
