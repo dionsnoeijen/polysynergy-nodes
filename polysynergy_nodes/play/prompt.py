@@ -26,5 +26,29 @@ class Prompt(Node):
         info="The prompt text to be used by agents or teams."
     )
 
+    session: dict | None = NodeVariableSettings(
+        label="Session",
+        dock=True,
+        has_in=True,
+        info="Session data associated with this prompt."
+    )
+
+    user: list | None = NodeVariableSettings(
+        label="User",
+        dock=True,
+        has_in=True,
+        info="List of user IDs associated with this prompt."
+    )
+
+    active_session: str = NodeVariableSettings(
+        label="Active Session",
+        info="Currently selected session ID."
+    )
+
+    active_user: str = NodeVariableSettings(
+        label="Active User",
+        info="Currently selected user ID."
+    )
+
     def execute(self):
         pass
