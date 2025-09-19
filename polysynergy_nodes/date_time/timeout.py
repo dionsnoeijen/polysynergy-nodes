@@ -1,8 +1,8 @@
+import asyncio
+
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
-
-import time
 
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
@@ -24,6 +24,6 @@ class Timeout(Node):
         info="True path for the node."
     )
 
-    def execute(self):
-        time.sleep(self.seconds)
+    async def execute(self):
+        await asyncio.sleep(self.seconds)
         self.true_path = True

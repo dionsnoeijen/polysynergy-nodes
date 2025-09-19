@@ -28,14 +28,12 @@ class Prompt(Node):
 
     session: dict | None = NodeVariableSettings(
         label="Session",
-        dock=True,
         has_in=True,
         info="Session data associated with this prompt."
     )
 
     user: list | None = NodeVariableSettings(
         label="User",
-        dock=True,
         has_in=True,
         info="List of user IDs associated with this prompt."
     )
