@@ -8,7 +8,7 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
 @node(
     name="Date Difference",
-    category="date_time",
+    category="datetime",
     icon="time.svg"
 )
 class DateDifference(Node):

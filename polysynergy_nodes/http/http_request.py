@@ -1,5 +1,6 @@
 import json
 import httpx
+import urllib.parse
 from http import HTTPMethod
 
 from polysynergy_node_runner.execution_context.replace_placeholders import replace_placeholders
@@ -46,23 +47,84 @@ class HttpRequest(Node):
     response_cookies: dict[str, str] = NodeVariableSettings(label="Response Cookies", has_out=True)
     response_elapsed: float = NodeVariableSettings(label="Response Elapsed", has_out=True)
 
-    true_path: bool | str = PathSettings(label="Success (Response Body)")
+    true_path: bool | str | bytes = PathSettings(label="Success (Response Body)")
     false_path: bool | dict = PathSettings(label="Error (Exception or HTTP Error)")
+
+    def is_url_encoded(self, url: str) -> bool:
+        """Check if a URL appears to be already encoded"""
+        # Check for common signs of URL encoding
+        # If we see %20, %2F, %3A etc, it's likely already encoded
+        import re
+        return bool(re.search(r'%[0-9A-Fa-f]{2}', url))
+
+    def smart_url_encode(self, url: str) -> str:
+        """Encode URL only if not already encoded"""
+        if self.is_url_encoded(url):
+            print(f"[HTTP] URL appears already encoded, using as-is: {url}")
+            return url
+
+        # Parse the URL
+        parsed = urllib.parse.urlparse(url)
+
+        # Encode the path component if needed
+        encoded_path = urllib.parse.quote(parsed.path, safe='/:@!$&\'()*+,;=')
+
+        # Reconstruct the URL
+        encoded_url = urllib.parse.urlunparse((
+            parsed.scheme,
+            parsed.netloc,
+            encoded_path,
+            parsed.params,
+            parsed.query,  # Query will be handled separately via params
+            parsed.fragment
+        ))
+
+        if encoded_url != url:
+            print(f"[HTTP] URL encoded: {url} -> {encoded_url}")
+
+        return encoded_url
 
     async def execute(self):
         try:
+            # Log the incoming request details
+            print(f"\n[HTTP] ========== HTTP Request Starting ==========")
+            print(f"[HTTP] Method: {self.method}")
+            print(f"[HTTP] URL (raw): {self.url}")
             replaced_url_vars = replace_placeholders(
                 data=self.url_variables,
                 values=self.url_variables,
-                state=self.state
+                state=self.state,
+                current_node=self
             )
 
-            replaced_url = replace_placeholders(data=self.url, values=replaced_url_vars, state=self.state)
+            replaced_url = replace_placeholders(data=self.url, values=replaced_url_vars, state=self.state, current_node=self)
 
-            replaced_headers = replace_placeholders(data=self.headers, values=replaced_url_vars, state=self.state)
-            replaced_query = replace_placeholders(data=self.query, values=replaced_url_vars, state=self.state)
-            replaced_cookies = replace_placeholders(data=self.cookies, values=replaced_url_vars, state=self.state)
-            replaced_body = replace_placeholders(data=self.body, values=replaced_url_vars, state=self.state)
+            # Apply smart URL encoding
+            replaced_url = self.smart_url_encode(replaced_url)
+
+            print(f"[HTTP] URL (final): {replaced_url}")
+
+            replaced_headers = replace_placeholders(data=self.headers, values=replaced_url_vars, state=self.state, current_node=self)
+            replaced_query = replace_placeholders(data=self.query, values=replaced_url_vars, state=self.state, current_node=self)
+            replaced_cookies = replace_placeholders(data=self.cookies, values=replaced_url_vars, state=self.state, current_node=self)
+            replaced_body = replace_placeholders(data=self.body, values=replaced_url_vars, state=self.state, current_node=self)
+
+            # Log headers if present
+            if replaced_headers:
+                print(f"[HTTP] Headers: {json.dumps(replaced_headers, indent=2)}")
+
+            # Log query params if present
+            if replaced_query:
+                print(f"[HTTP] Query params: {json.dumps(replaced_query, indent=2)}")
+
+            # Log body preview if present
+            if replaced_body:
+                body_preview = str(replaced_body)[:500] if len(str(replaced_body)) > 500 else str(replaced_body)
+                print(f"[HTTP] Body (first 500 chars): {body_preview}")
+
+            print(f"[HTTP] Timeout: {self.timeout}s")
+            print(f"[HTTP] Follow redirects: {self.follow_redirects}")
+            print(f"[HTTP] Verify SSL: {self.verify_ssl}")
 
             is_json = (
                 isinstance(replaced_headers, dict)
@@ -94,7 +156,9 @@ class HttpRequest(Node):
                 kwargs["content"] = replaced_body
 
             async with httpx.AsyncClient(**client_kwargs) as client:
+                print(f"[HTTP] Sending {self.method} request...")
                 response = await client.request(**kwargs)
+                print(f"[HTTP] Response received: Status {response.status_code}")
 
             self.response_http_status = response.status_code
             self.response_body = response.text
@@ -102,15 +166,41 @@ class HttpRequest(Node):
             self.response_cookies = dict(response.cookies)
             self.response_elapsed = response.elapsed.total_seconds()
 
+            # Log response details
+            print(f"[HTTP] Response time: {self.response_elapsed:.3f}s")
+            print(f"[HTTP] Response headers: {json.dumps(dict(response.headers), indent=2)}")
+            if response.text and len(response.text) < 1000:
+                print(f"[HTTP] Response body: {response.text}")
+            elif response.text:
+                print(f"[HTTP] Response body (first 1000 chars): {response.text[:1000]}...")
+
+            # Auto-detect binary content based on multiple criteria
+            content_type = response.headers.get('content-type', '').lower()
+            content_disposition = response.headers.get('content-disposition', '').lower()
+
+            is_binary = (
+                # Common binary MIME types
+                content_type.startswith(('application/', 'image/', 'video/', 'audio/')) or
+                # File download indication
+                'attachment' in content_disposition or
+                # Binary content detection (null bytes in first 512 bytes)
+                b'\x00' in response.content[:512]
+            )
+
             if response.status_code < 400:
-                self.true_path = response.text
+                print(f"[HTTP] ✓ Request successful (status {response.status_code})")
+                self.true_path = response.content if is_binary else response.text
             else:
+                print(f"[HTTP] ✗ Request failed with HTTP error {response.status_code}")
                 self.false_path = {"error": f"{response.status_code}: {response.text}"}
 
         except Exception as e:
             error_msg = f"{type(e).__name__}: {str(e)}"
+            print(f"[HTTP] ✗ Request failed with exception: {error_msg}")
             self.false_path = {
                 "error": error_msg,
                 "error_type": type(e).__name__,
                 "details": str(e)
             }
+        finally:
+            print(f"[HTTP] ========== HTTP Request Complete ==========")

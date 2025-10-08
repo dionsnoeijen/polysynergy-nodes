@@ -38,13 +38,15 @@ class VariableString(Node):
             replaced_values = replace_placeholders(
                 data=self.values,
                 values=self.values,
-                state=self.state
+                state=self.state,
+                current_node=self
             )
 
             self.true_path = replace_placeholders(
                 data=self.value,
                 values=replaced_values,
-                state=self.state
+                state=self.state,
+                current_node=self
             )
         except Exception as e:
             self.false_path = NodeError.format(e)

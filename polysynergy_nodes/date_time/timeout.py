@@ -10,7 +10,7 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 @node(
     name="Timeout",
     icon="clock.svg",
-    category="date_time"
+    category="datetime"
 )
 class Timeout(Node):
 

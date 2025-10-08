@@ -22,7 +22,8 @@ class VariableDict(Node):
             replaced = replace_placeholders(
                 data=self.value_as_json_string,
                 values=self.value,
-                state=self.state
+                state=self.state,
+                current_node=self
             )
 
             if isinstance(replaced, str):

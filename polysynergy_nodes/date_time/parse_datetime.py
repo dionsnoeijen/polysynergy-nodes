@@ -8,7 +8,7 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
 @node(
     name="Parse DateTime",
-    category="date_time",
+    category="datetime",
     icon="time.svg"
 )
 class ParseDateTime(Node):

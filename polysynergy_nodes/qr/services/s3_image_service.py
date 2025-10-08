@@ -67,8 +67,9 @@ class S3ImageService:
         """Ensure the bucket exists, create if it doesn't"""
         try:
             self.s3_client.head_bucket(Bucket=bucket_name)
-            # Bucket exists, try to ensure it has proper public access policy
-            self.set_bucket_public_read_policy(bucket_name)
+            # Bucket exists - only try to set public policy if signed URLs are disabled
+            if not self.use_signed_urls:
+                self.set_bucket_public_read_policy(bucket_name)
             return True
         except ClientError as e:
             error_code = e.response['Error']['Code']
@@ -82,11 +83,14 @@ class S3ImageService:
                             Bucket=bucket_name,
                             CreateBucketConfiguration={'LocationConstraint': self.region}
                         )
-                    
-                    # Set bucket to allow public read for images
+
+                    # Set CORS for all buckets
                     self.set_bucket_cors(bucket_name)
-                    self.set_bucket_public_read_policy(bucket_name)
-                    
+
+                    # Only set public access policy if signed URLs are disabled
+                    if not self.use_signed_urls:
+                        self.set_bucket_public_read_policy(bucket_name)
+
                     return True
                 except ClientError as create_error:
                     print(f"Failed to create bucket {bucket_name}: {create_error}")
@@ -118,7 +122,7 @@ class S3ImageService:
     def set_bucket_public_read_policy(self, bucket_name: str):
         """Set bucket policy to allow public read access"""
         import json
-        
+
         policy = {
             "Version": "2012-10-17",
             "Statement": [
@@ -131,14 +135,21 @@ class S3ImageService:
                 }
             ]
         }
-        
+
         try:
             self.s3_client.put_bucket_policy(
                 Bucket=bucket_name,
                 Policy=json.dumps(policy)
             )
+            print(f"Successfully set public read policy for bucket {bucket_name}")
         except ClientError as e:
-            print(f"Failed to set public read policy for bucket {bucket_name}: {e}")
+            error_code = e.response['Error']['Code']
+            # Don't fail the entire operation if public access is blocked
+            if error_code == 'AccessDenied' and 'BlockPublicPolicy' in str(e):
+                print(f"Note: Public bucket policy blocked for {bucket_name} - using signed URLs instead")
+            else:
+                print(f"Failed to set public read policy for bucket {bucket_name}: {e}")
+            # Continue execution - signed URLs will be used as fallback
     
     def upload_image(
         self,

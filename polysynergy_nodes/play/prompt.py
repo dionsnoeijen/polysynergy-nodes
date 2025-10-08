@@ -26,6 +26,12 @@ class Prompt(Node):
         info="The prompt text to be used by agents or teams."
     )
 
+    files: list | None = NodeVariableSettings(
+        label="Files",
+        has_in=True,
+        info="List of file URLs/paths to be processed by agents (images, audio, video, documents)"
+    )
+
     session: dict | None = NodeVariableSettings(
         label="Session",
         has_in=True,

@@ -1,0 +1,94 @@
+import os
+
+from polysynergy_node_runner.execution_context.replace_placeholders import replace_placeholders
+from polysynergy_node_runner.setup_context.node import Node
+from polysynergy_node_runner.setup_context.node_decorator import node
+from polysynergy_node_runner.setup_context.node_error import NodeError
+from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
+from polysynergy_node_runner.setup_context.path_settings import PathSettings
+from polysynergy_nodes.keyvalue.services.client import DynamoDBClient
+
+
+@node(
+    name="KeyValue - Get Collection",
+    category="persistent",
+    icon="key.svg",
+)
+class KeyValueCollectionGet(Node):
+
+    collection: str = NodeVariableSettings(
+        has_in=True,
+        dock=True,
+        required=True,
+        info="The category/collection name to search in"
+    )
+
+    key: str = NodeVariableSettings(
+        has_in=True,
+        dock=True,
+        required=True,
+        info="The key to retrieve"
+    )
+
+    true_path: bool | str = PathSettings(label="Value", info="The value retrieved from the composite key-value store")
+    false_path: bool | dict = PathSettings(label="Error", info="The error message if the key does not exist or if there is an error retrieving the value")
+
+    def execute(self):
+        db_client = DynamoDBClient()
+        try:
+            # Replace placeholders in collection and key
+            processed_collection = replace_placeholders(
+                data=self.collection,
+                values={},
+                state=self.state,
+                current_node=self
+            )
+
+            processed_key = replace_placeholders(
+                data=self.key,
+                values={},
+                state=self.state,
+                current_node=self
+            )
+
+            tenant_id = os.getenv('TENANT_ID')
+            project_id = os.getenv('PROJECT_ID')
+
+            if not tenant_id or not project_id:
+                self.false_path = {
+                    "error": "Missing tenant_id or project_id in environment"
+                }
+                return
+
+            # Use composite key pattern for security isolation
+            pk = f"{tenant_id}#{project_id}#{processed_collection}"
+            sk = processed_key
+
+            table = db_client.get_table()
+            response = table.get_item(Key={"PK": pk, "SK": sk})
+
+            item = response.get("Item")
+
+            if item:
+                # Additional security check - verify tenant/project ownership
+                if (item.get("tenant_id") != tenant_id or
+                    item.get("project_id") != project_id):
+                    self.false_path = {
+                        "error": "Access denied - item belongs to different tenant/project"
+                    }
+                    return
+
+                value = item.get("Value")
+                if value is not None:
+                    self.true_path = value
+                else:
+                    self.false_path = {
+                        "error": f"Key '{sk}' found but has no value in collection '{processed_collection}'"
+                    }
+            else:
+                self.false_path = {
+                    "error": f"Key '{sk}' not found in collection '{processed_collection}'"
+                }
+
+        except Exception as e:
+            self.false_path = NodeError.format(e)

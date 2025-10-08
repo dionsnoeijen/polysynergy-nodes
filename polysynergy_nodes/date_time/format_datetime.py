@@ -9,7 +9,7 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
 @node(
     name="Format DateTime",
-    category="date_time",
+    category="datetime",
     icon="time.svg"
 )
 class FormatDateTime(Node):

@@ -31,8 +31,8 @@ class VariableJson(Node):
 
     async def execute(self):
         try:
-            self.values = replace_placeholders(data=self.values, values=self.values, state=self.state)
-            self.append = replace_placeholders(data=self.append, values=self.values, state=self.state)
+            self.values = replace_placeholders(data=self.values, values=self.values, state=self.state, current_node=self)
+            self.append = replace_placeholders(data=self.append, values=self.values, state=self.state, current_node=self)
 
             if isinstance(self.value, str):
                 json_str = self.value
@@ -42,7 +42,7 @@ class VariableJson(Node):
                 except (TypeError, ValueError):
                     raise ValueError("Value is not JSON-serializable")
 
-            replaced = replace_placeholders(data=json_str, values=self.values, state=self.state)
+            replaced = replace_placeholders(data=json_str, values=self.values, state=self.state, current_node=self)
 
             if isinstance(replaced, str):
                 parsed = json.loads(replaced)

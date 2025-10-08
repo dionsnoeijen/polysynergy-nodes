@@ -57,14 +57,16 @@ class HttpResponse(Node):
             self.headers = replace_placeholders(
                 data=self.headers or {},
                 values={},
-                state=self.state
+                state=self.state,
+                current_node=self
             )
 
             # Replace placeholders in content_type
             self.content_type = replace_placeholders(
                 data=self.content_type,
                 values={},
-                state=self.state
+                state=self.state,
+                current_node=self
             )
 
             # Replace placeholders in body (only if it's not bytes)
@@ -72,7 +74,8 @@ class HttpResponse(Node):
                 self.body = replace_placeholders(
                     data=self.body,
                     values={},
-                    state=self.state
+                    state=self.state,
+                    current_node=self
                 )
 
             merged_headers: dict[str, str] = dict(self.headers)
