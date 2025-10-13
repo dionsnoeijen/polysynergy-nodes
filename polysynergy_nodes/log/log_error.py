@@ -19,3 +19,4 @@ class LogError(Node):
 
     def execute(self):
         logger.error(self.message)
+        print(f"[ERROR] {self.message}")

@@ -2,8 +2,6 @@ import smtplib
 import base64
 import asyncio
 import re
-from email.mime.base import MIMEBase
-from email import encoders
 from email.message import EmailMessage as RawEmail
 
 from polysynergy_node_runner.setup_context.dock_property import dock_text_area, dock_property

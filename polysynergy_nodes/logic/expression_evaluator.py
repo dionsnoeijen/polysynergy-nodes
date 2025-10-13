@@ -1,6 +1,6 @@
 import re
-from typing import Any, Dict
-from polysynergy_node_runner.setup_context.dock_property import dock_text_area
+from typing import Dict
+from polysynergy_node_runner.setup_context.dock_property import dock_text_area, dock_dict
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
@@ -9,29 +9,33 @@ from polysynergy_node_runner.setup_context.node_error import NodeError
 
 @node(name="Expression Evaluator", category="logic", type="expression_evaluator", icon="logic.svg", version=1.0)
 class ExpressionEvaluator(Node):
-    # Dynamic variables (a through z)
-    a: Any = NodeVariableSettings(default=None, dock=True, has_in=True, has_out=False)
-    b: Any = NodeVariableSettings(default=None, dock=True, has_in=True, has_out=False)
-    c: Any = NodeVariableSettings(default=None, dock=True, has_in=True, has_out=False)
-    d: Any = NodeVariableSettings(default=None, dock=True, has_in=True, has_out=False)
-    e: Any = NodeVariableSettings(default=None, dock=True, has_in=True, has_out=False)
-    f: Any = NodeVariableSettings(default=None, dock=True, has_in=True, has_out=False)
-    g: Any = NodeVariableSettings(default=None, dock=True, has_in=True, has_out=False)
-    h: Any = NodeVariableSettings(default=None, dock=True, has_in=True, has_out=False)
-    
+    # Variables dictionary for dynamic variable names
+    variables: dict = NodeVariableSettings(
+        label="Variables",
+        dock=dock_dict(
+            key_label="Variable Name",
+            in_switch=True,
+            value_field=True,
+            type_field=True,
+            out_switch=False,
+            info="Variables to use in the expression (e.g., age, price, status)"
+        ),
+        default=[]
+    )
+
     # Expression to evaluate
     expression: str = NodeVariableSettings(
-        default="a > b", 
-        dock=dock_text_area(), 
-        has_in=True, 
-        has_out=False
+        dock=dock_text_area(),
+        has_in=True,
+        has_out=False,
+        info="Expression to evaluate using variable names (e.g., 'age > 18 && status == \"active\"')"
     )
     
     # Path settings
-    true_path: Any = PathSettings(default=False)
-    false_path: Any = PathSettings(default=False)
+    true_path: bool = PathSettings(default=False)
+    false_path: bool | str = PathSettings(default=False)
 
-    def coerce_value(self, value: Any) -> Any:
+    def coerce_value(self, value: int | float | str | bool) -> int | float | str | bool:
         """Convert string values to appropriate types for comparison."""
         if isinstance(value, bool):
             return value
@@ -53,14 +57,13 @@ class ExpressionEvaluator(Node):
                 return value
         return value
 
-    def get_variables(self) -> Dict[str, Any]:
-        """Get all non-None variable values."""
-        variables = {}
-        for var_name in 'abcdefgh':
-            value = getattr(self, var_name)
+    def get_variables(self) -> Dict[str, int | float | str | bool]:
+        """Get all variable values from the variables dict and coerce them."""
+        coerced_vars = {}
+        for var_name, value in self.variables.items():
             if value is not None:
-                variables[var_name] = self.coerce_value(value)
-        return variables
+                coerced_vars[var_name] = self.coerce_value(value)
+        return coerced_vars
 
     def tokenize_expression(self, expression: str) -> list:
         """Tokenize the expression into operators, operands, and parentheses."""
@@ -69,7 +72,7 @@ class ExpressionEvaluator(Node):
         tokens = re.findall(token_pattern, expression)
         return [token.strip() for token in tokens if token.strip()]
 
-    def evaluate_comparison(self, left: Any, operator: str, right: Any) -> bool:
+    def evaluate_comparison(self, left: int | float | str | bool, operator: str, right: int | float | str | bool) -> bool:
         """Evaluate a single comparison."""
         try:
             if operator == '==':
@@ -90,7 +93,7 @@ class ExpressionEvaluator(Node):
             # Handle type comparison errors (e.g., comparing string to number)
             return False
 
-    def evaluate_expression(self, expression: str, variables: Dict[str, Any]) -> bool:
+    def evaluate_expression(self, expression: str, variables: Dict[str, int | float | str | bool]) -> bool:
         """Evaluate a boolean expression with support for &&, ||, !, and ()."""
         tokens = self.tokenize_expression(expression)
         

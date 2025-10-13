@@ -20,3 +20,4 @@ class LogInfo(Node):
 
     def execute(self):
         logger.info(self.message)
+        print(f"[INFO] {self.message}")
