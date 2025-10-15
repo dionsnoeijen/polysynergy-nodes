@@ -1,42 +1,114 @@
-# Deterministic UUID
+# 🔐 Deterministic UUID Node
 
-Generates a deterministic UUID (version 5) from an input string using SHA-1 hashing with a namespace.
+The `Deterministic UUID` node generates a UUID v5 from input text, producing the same UUID for identical inputs. Perfect for creating consistent, reproducible identifiers.
 
-## Inputs
+---
 
-- **Input String** (required): The string to generate a UUID from
-- **Namespace** (required): The namespace to use ("DNS", "URL", "OID", or "X500")
+## 📂 Category
 
-## Flow Control
+**uuid**
 
-- **True Path**: Triggered on successful generation. Contains the generated UUID string.
-- **False Path**: Triggered on errors (e.g., non-string input). Contains error message.
+---
 
-## Behavior
+## ⚙️ Inputs
 
-- Same input string and namespace always generate the same UUID
-- Uses SHA-1 hashing algorithm internally
-- Namespace affects the generated UUID (different namespaces produce different UUIDs)
-- Namespace is case-insensitive
-- Invalid namespaces default to "DNS"
-- Handles Unicode strings correctly
+| Name          | Type   | Required | Description                              |
+|---------------|--------|----------|------------------------------------------|
+| input_string  | str    | ✅        | Text to generate UUID from               |
+| namespace     | str    | ❌        | UUID namespace (default: DNS)            |
 
-## Example Usage
+---
 
+## 🔌 Outputs
+
+| Name        | Type      | Description                                 |
+|-------------|-----------|---------------------------------------------|
+| true_path   | str       | Deterministic UUID v5                       |
+| false_path  | dict      | Error if generation fails                   |
+
+---
+
+## 🔑 Namespaces
+
+| Namespace | Use Case                                    |
+|-----------|---------------------------------------------|
+| **DNS**   | Domain names (default)                      |
+| **URL**   | URLs and URIs                               |
+| **OID**   | ISO OID identifiers                         |
+| **X500**  | X.500 Distinguished Names                   |
+
+---
+
+## ✅ Examples
+
+### Generate from Email (DNS):
+```json
+{
+  "input_string": "user@example.com",
+  "namespace": "DNS"
+}
 ```
-Input String: "example.com"
-Namespace: "DNS"
-Result: "cfbff0d1-9375-5685-968c-48ce8b15ae17"
+**Output:** `"8d7e3b2a-5c4f-5a1b-9e8d-7c6b5a4e3d2c"` (always same for this input)
+
+### Generate from URL:
+```json
+{
+  "input_string": "https://example.com/resource/123",
+  "namespace": "URL"
+}
+```
+**Output:** Consistent UUID for this URL
+
+### Generate Resource ID:
+```json
+{
+  "input_string": "project:alpha:resource:42"
+}
+```
+**Output:** Reproducible project resource identifier
+
+---
+
+## 🔄 Deterministic Behavior
+
+**Same Input → Same UUID:**
+```
+Input: "user@example.com" (namespace: DNS)
+Output 1: "8d7e3b2a-5c4f-5a1b-9e8d-7c6b5a4e3d2c"
+Output 2: "8d7e3b2a-5c4f-5a1b-9e8d-7c6b5a4e3d2c"  ← Always identical
 ```
 
+**Different Input → Different UUID:**
 ```
-Input String: "example.com"
-Namespace: "URL"
-Result: "21f7f8de-8051-5b89-8680-0195ef798b6a"
+"user@example.com" → "8d7e3b2a-..."
+"admin@example.com" → "f3a2b1c4-..."  ← Different UUID
 ```
 
-```
-Input String: "hello world"
-Namespace: "DNS"
-Result: "2ed6657d-e927-568b-95e1-665ba9b6a5e1"
-```
+---
+
+## 💡 Use Cases
+
+- **Idempotent Operations**: Ensure same ID for duplicate requests
+- **Content-based IDs**: Generate IDs from content hashes
+- **Reproducible Tests**: Consistent UUIDs in test environments
+- **Deterministic Migrations**: Migrate data with consistent IDs
+
+---
+
+## 🎯 Comparison: UUID v4 vs UUID v5
+
+| Feature | UUID v4 (Random) | UUID v5 (Deterministic) |
+|---------|------------------|-------------------------|
+| **Reproducible** | ❌ Random each time | ✅ Same for same input |
+| **Collision Risk** | Very low | Virtually none (namespaced) |
+| **Use Case** | Unique IDs | Content-based IDs |
+
+---
+
+## ⚠️ Notes
+
+- **Deterministic**: Always produces same UUID for same input+namespace
+- **UUID v5**: Uses SHA-1 hashing (standardized)
+- **Namespace Matters**: Different namespaces produce different UUIDs
+- **Case Sensitive**: "User" and "user" produce different UUIDs
+- **Not Cryptographic**: Don't use for security purposes

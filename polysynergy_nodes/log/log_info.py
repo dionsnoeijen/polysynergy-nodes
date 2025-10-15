@@ -1,3 +1,4 @@
+import json
 import logging
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
@@ -12,12 +13,17 @@ logger = logging.getLogger(__name__)
 )
 class LogInfo(Node):
 
-    message: str = NodeVariableSettings(
+    message: str | dict = NodeVariableSettings(
         label="Message",
         dock=True,
         has_in=True
     )
 
     def execute(self):
-        logger.info(self.message)
-        print(f"[INFO] {self.message}")
+        if isinstance(self.message, dict):
+            formatted_message = json.dumps(self.message, indent=2, ensure_ascii=False)
+            logger.info(formatted_message)
+            print(f"[INFO] {formatted_message}")
+        else:
+            logger.info(self.message)
+            print(f"[INFO] {self.message}")
