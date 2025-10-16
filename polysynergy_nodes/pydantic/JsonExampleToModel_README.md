@@ -22,9 +22,9 @@ The `JSON Example to Response Model` node dynamically creates a Pydantic BaseMod
 
 ## 🔌 Outputs
 
-| Name            | Type       | Description                              |
-|-----------------|------------|------------------------------------------|
-| response_model  | BaseModel  | Generated Pydantic model                 |
+| Name  | Type       | Description                              |
+|-------|------------|------------------------------------------|
+| model | BaseModel  | Generated Pydantic model                 |
 
 ---
 
@@ -116,7 +116,7 @@ The node automatically infers types from example values:
 
 ### Agno Agent Responses:
 ```
-JSON Example to Response Model → Agent (response_model=model)
+JSON Example to Response Model → Agent (model=model)
 ```
 
 ### API Response Validation:

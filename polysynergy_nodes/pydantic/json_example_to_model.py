@@ -9,11 +9,11 @@ from polysynergy_node_runner.setup_context.service_node import ServiceNode
 
 
 @node(
-    name="JSON Example to Response Model",
+    name="JSON Example to Model",
     category="pydantic",
     has_enabled_switch=False,
 )
-class JsonExampleToResponseModel(ServiceNode):
+class JsonExampleToModel(ServiceNode):
     """
     Converts a JSON example into a Pydantic BaseModel.
 
@@ -51,8 +51,8 @@ class JsonExampleToResponseModel(ServiceNode):
         info="If True, all fields will be optional (can be None). If False, fields are required."
     )
 
-    response_model: BaseModel | None = NodeVariableSettings(
-        label="Response Model",
+    model: BaseModel | None = NodeVariableSettings(
+        label="Model",
         has_out=True,
         info="The generated Pydantic BaseModel that can be used for validation and parsing"
     )
@@ -164,10 +164,10 @@ class JsonExampleToResponseModel(ServiceNode):
         generated_model = self._json_to_model(data, model_name)
 
         # Store it for output
-        self.response_model = generated_model
+        self.model = generated_model
 
-        print(f"DEBUG JsonExampleToResponseModel: Generated model = {generated_model}")
-        print(f"DEBUG JsonExampleToResponseModel: Model name = {model_name}")
-        print(f"DEBUG JsonExampleToResponseModel: Stored in self.response_model = {self.response_model}")
+        print(f"DEBUG JsonExampleToModel: Generated model = {generated_model}")
+        print(f"DEBUG JsonExampleToModel: Model name = {model_name}")
+        print(f"DEBUG JsonExampleToModel: Stored in self.model = {self.model}")
 
         return generated_model
