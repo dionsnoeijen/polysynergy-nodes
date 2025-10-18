@@ -47,8 +47,8 @@ class HttpRequest(Node):
     response_cookies: dict[str, str] = NodeVariableSettings(label="Response Cookies", has_out=True)
     response_elapsed: float = NodeVariableSettings(label="Response Elapsed", has_out=True)
 
-    true_path: bool | str | bytes = PathSettings(label="Success (Response Body)")
-    false_path: bool | dict = PathSettings(label="Error (Exception or HTTP Error)")
+    true_path: bool | str | bytes = PathSettings(label="Success")
+    false_path: bool | dict = PathSettings(label="Error")
 
     def is_url_encoded(self, url: str) -> bool:
         """Check if a URL appears to be already encoded"""
