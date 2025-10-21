@@ -41,7 +41,7 @@ class Prompt(Node):
     user: list | None = NodeVariableSettings(
         label="User",
         has_in=True,
-        info="List of user IDs associated with this prompt."
+        info="List of user profiles (dicts with id, name, email, role, etc.). Example: [{\"id\": \"dion\", \"name\": \"Dion\", \"email\": \"dion@company.nl\", \"role\": \"Sales\"}]"
     )
 
     active_session: str = NodeVariableSettings(

@@ -7,6 +7,7 @@ from typing import Optional, List
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
+from polysynergy_node_runner.setup_context.dock_property import dock_property
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
 from polysynergy_node_runner.setup_context.node_error import NodeError
 
@@ -54,6 +55,14 @@ class OAuthClientCredentials(Node):
         dock=True,
         has_in=True,
         info="Resource parameter (optional, for older Microsoft endpoints)"
+    )
+
+    force_refresh: bool = NodeVariableSettings(
+        label="Force Refresh Token",
+        dock=dock_property(switch=True),
+        has_in=True,
+        default=False,
+        info="Force request new token (ignore cached token in DynamoDB)"
     )
 
     # Output parameters
@@ -198,7 +207,8 @@ class OAuthClientCredentials(Node):
                     # Update token information
                     self.access_token = token_data.get("access_token")
                     self.token_type = token_data.get("token_type", "Bearer")
-                    self.expires_in = token_data.get("expires_in")
+                    expires_in_raw = token_data.get("expires_in")
+                    self.expires_in = int(expires_in_raw) if expires_in_raw is not None else None
 
                     # Calculate expiry time
                     if self.expires_in:
@@ -223,6 +233,23 @@ class OAuthClientCredentials(Node):
 
     async def execute(self):
         try:
+            # Trim whitespace from string inputs
+            if self.token_url:
+                self.token_url = self.token_url.strip()
+            if self.client_id:
+                self.client_id = self.client_id.strip()
+            if self.client_secret:
+                self.client_secret = self.client_secret.strip()
+            if self.resource:
+                self.resource = self.resource.strip()
+
+            # If force_refresh is enabled, skip cache and request new token
+            if self.force_refresh:
+                await self._request_new_token()
+                self.scopes_output = self.scopes
+                self.true_path = f"Bearer {self.access_token}" if self.access_token else None
+                return
+
             # First, try to load existing token from storage
             token_data = await self._get_token_from_storage()
 
@@ -230,7 +257,8 @@ class OAuthClientCredentials(Node):
                 self.access_token = token_data.get("access_token")
                 self._expires_at = token_data.get("token_expires")  # Updated field name
                 self.token_type = token_data.get("token_type", "Bearer")
-                self.expires_in = token_data.get("expires_in")
+                expires_in_raw = token_data.get("expires_in")
+                self.expires_in = int(expires_in_raw) if expires_in_raw is not None else None
 
             # Check if current token is valid
             if self._is_token_valid():

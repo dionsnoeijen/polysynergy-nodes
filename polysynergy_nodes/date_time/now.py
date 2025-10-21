@@ -22,10 +22,11 @@ class Now(Node):
     )
 
     offset: str = NodeVariableSettings(
-        label="Offset (e.g. -5s, +2m, -1h, +3d)",
+        label="Offset",
         dock=True,
         has_in=True,
-        default=""
+        default="",
+        info="Time offset from now. Format: [+/-]<number><unit>. Units: s (seconds), m (minutes), h (hours), d (days). Examples: '+2d' (2 days from now), '-1h' (1 hour ago), '+30m' (30 minutes from now)"
     )
 
     timestamp_output: int = NodeVariableSettings(

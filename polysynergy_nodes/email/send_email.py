@@ -23,10 +23,7 @@ class SendEmail(Node):
     smtp_user: str = NodeVariableSettings(label="User", dock=True, has_in=True)
     smtp_password: str = NodeVariableSettings(
         label="SMTP Password",
-        dock=dock_property(
-            enabled=False,
-            info="Connect a secret (node) to set this value."
-        ),
+        dock=True,
         has_in=True,
     )
     smtp_use_tls: bool = NodeVariableSettings(label="Use TLS", dock=dock_property(switch=True), default=True)

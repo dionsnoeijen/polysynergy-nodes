@@ -306,6 +306,16 @@ class OAuthDeviceCode(Node):
 
     async def execute(self):
         try:
+            # Trim whitespace from string inputs
+            if self.device_authorization_url:
+                self.device_authorization_url = self.device_authorization_url.strip()
+            if self.token_url:
+                self.token_url = self.token_url.strip()
+            if self.client_id:
+                self.client_id = self.client_id.strip()
+            if self.device_code:
+                self.device_code = self.device_code.strip()
+
             if not self.device_code:
                 # Step 1: Request device code
                 await self._request_device_code()

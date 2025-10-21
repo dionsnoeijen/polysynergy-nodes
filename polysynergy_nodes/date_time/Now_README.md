@@ -20,6 +20,7 @@ This node is useful for time-based comparisons, scheduling, or logging.
 | Name              | Type   | Input | Output | Description |
 |-------------------|--------|-------|--------|-------------|
 | `format`          | str    | ✅     | ❌      | Output format using Python `strftime` syntax, or `"iso8601"` for standard ISO format. |
+| `offset`          | str    | ✅     | ❌      | Time offset from now. Format: `[+/-]<number><unit>`. Units: `s` (seconds), `m` (minutes), `h` (hours), `d` (days). Examples: `+2d`, `-1h`, `+30m` |
 | `timestamp_output`| int    | ❌     | ✅      | Current time as UNIX timestamp (UTC). |
 
 ## **Flow Control**
@@ -31,10 +32,11 @@ This node is useful for time-based comparisons, scheduling, or logging.
 
 ## **How It Works**
 1. The node gets the current **UTC** datetime.
-2. If `format = "iso8601"`, the output is like `"2025-04-07T14:30:00Z"`.
-3. Otherwise, the format is applied via Python's `strftime`, e.g. `%Y-%m-%d %H:%M:%S`.
-4. The result is sent to `true_path`, and the UNIX timestamp is set in `timestamp_output`.
-5. If an error occurs, it is passed to `false_path`.
+2. If an `offset` is provided (e.g., `+2d`), it adjusts the time accordingly.
+3. If `format = "iso8601"`, the output is like `"2025-04-07T14:30:00Z"`.
+4. Otherwise, the format is applied via Python's `strftime`, e.g. `%Y-%m-%d %H:%M:%S`.
+5. The result is sent to `true_path`, and the UNIX timestamp is set in `timestamp_output`.
+6. If an error occurs, it is passed to `false_path`.
 
 ---
 
@@ -61,6 +63,32 @@ format = "%Y/%m/%d %H:%M"
 #### **Output**
 - `true_path` = `"2025/04/07 14:30"`
 - `timestamp_output` = `1744036200`
+
+---
+
+### **Example 3: Time Offset (2 days from now)**
+#### **Input**
+```text
+format = "%Y-%m-%d %H:%M:%S"
+offset = "+2d"
+```
+
+#### **Output** (assuming current time is 2025-04-07 14:30:00)
+- `true_path` = `"2025-04-09 14:30:00"`
+- `timestamp_output` = `1744209000`
+
+---
+
+### **Example 4: Time Offset (1 hour ago)**
+#### **Input**
+```text
+format = "iso8601"
+offset = "-1h"
+```
+
+#### **Output** (assuming current time is 2025-04-07T14:30:00Z)
+- `true_path` = `"2025-04-07T13:30:00Z"`
+- `timestamp_output` = `1744032600`
 
 ---
 

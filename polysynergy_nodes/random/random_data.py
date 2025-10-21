@@ -34,8 +34,8 @@ class RandomData(Node):
         has_in=True
     )
 
-    min: int = NodeVariableSettings(label="Min (for numbers)", default=0, has_in=True)
-    max: int = NodeVariableSettings(label="Max (for numbers)", default=100, has_in=True)
+    min: int = NodeVariableSettings(label="Min (for numbers)", dock=True, default=0, has_in=True)
+    max: int = NodeVariableSettings(label="Max (for numbers)", dock=True, default=100, has_in=True)
 
     true_path: str | int | float = PathSettings(label="Random Value")
     false_path: dict = PathSettings(label="Error")

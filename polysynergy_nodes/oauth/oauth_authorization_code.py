@@ -443,6 +443,20 @@ class OAuthAuthorizationCode(Node):
             raise Exception(f"Network error during token refresh: {str(e)}")
 
     async def execute(self):
+        # Trim whitespace from string inputs
+        if self.auth_url:
+            self.auth_url = self.auth_url.strip()
+        if self.token_url:
+            self.token_url = self.token_url.strip()
+        if self.client_id:
+            self.client_id = self.client_id.strip()
+        if self.client_secret:
+            self.client_secret = self.client_secret.strip()
+        if self.service_name:
+            self.service_name = self.service_name.strip()
+        if self.resource:
+            self.resource = self.resource.strip()
+
         print(f"[OAuth Debug] === Starting OAuth node execution ===")
         print(f"[OAuth Debug] Service: {self.service_name}")
         print(f"[OAuth Debug] Node ID: {self.id}")

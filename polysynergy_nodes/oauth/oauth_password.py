@@ -217,6 +217,18 @@ class OAuthPassword(Node):
 
     async def execute(self):
         try:
+            # Trim whitespace from string inputs
+            if self.token_url:
+                self.token_url = self.token_url.strip()
+            if self.client_id:
+                self.client_id = self.client_id.strip()
+            if self.client_secret:
+                self.client_secret = self.client_secret.strip()
+            if self.username:
+                self.username = self.username.strip()
+            if self.password:
+                self.password = self.password.strip()
+
             # Request token with username/password
             await self._request_token()
             self.true_path = f"Bearer {self.access_token}" if self.access_token else None
