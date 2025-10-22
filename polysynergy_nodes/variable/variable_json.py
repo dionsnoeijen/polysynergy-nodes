@@ -42,7 +42,16 @@ class VariableJson(Node):
                 except (TypeError, ValueError):
                     raise ValueError("Value is not JSON-serializable")
 
-            replaced = replace_placeholders(data=json_str, values=self.values, state=self.state, current_node=self)
+            # JSON-escape all string values before replacement to handle newlines and special chars
+            escaped_values = {}
+            for key, val in (self.values or {}).items():
+                if isinstance(val, str):
+                    # Escape the string for JSON: convert to JSON string, then strip quotes
+                    escaped_values[key] = json.dumps(val)[1:-1]
+                else:
+                    escaped_values[key] = val
+
+            replaced = replace_placeholders(data=json_str, values=escaped_values, state=self.state, current_node=self)
 
             if isinstance(replaced, str):
                 parsed = json.loads(replaced)

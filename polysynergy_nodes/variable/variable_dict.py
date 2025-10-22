@@ -15,6 +15,11 @@ class VariableDict(Node):
     merge: dict | None = NodeVariableSettings(
         label="Merge",
         has_in=True,
+        dock=dock_dict(
+            key_label="Key",
+            value_label="Dict (connect input)",
+            info="Merge multiple dicts"
+        ),
         info="Dictionary to merge into value"
     )
 
@@ -68,9 +73,9 @@ class VariableDict(Node):
                         try:
                             dict_value = json.loads(dict_value)
                         except json.JSONDecodeError:
-                            raise ValueError(
-                                f"Wrap value for key '{key}' is a string but not valid JSON"
-                            )
+                            # If it's not valid JSON, treat it as a plain string value
+                            # This allows both JSON strings and plain strings
+                            pass  # Keep dict_value as-is (plain string)
 
                     # Handle bytes (sometimes comes from database)
                     if isinstance(dict_value, bytes):
@@ -81,12 +86,8 @@ class VariableDict(Node):
                                 f"Wrap value for key '{key}' is bytes but not valid JSON"
                             )
 
-                    # Now it should be a dict or list
-                    if not isinstance(dict_value, (dict, list)):
-                        raise ValueError(
-                            f"Wrap value for key '{key}' must be a dictionary or list, got {type(dict_value).__name__}"
-                        )
-
+                    # Accept dict, list, str, int, float, bool, None - basically any JSON-serializable value
+                    # This allows wrapping both complex structures (dict/list) and simple values (strings, numbers)
                     result[key] = dict_value
                 self.value = result
             else:

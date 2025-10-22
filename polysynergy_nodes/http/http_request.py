@@ -104,14 +104,22 @@ class HttpRequest(Node):
 
             print(f"[HTTP] URL (final): {replaced_url}")
 
-            replaced_headers = replace_placeholders(data=self.headers, values=replaced_url_vars, state=self.state, current_node=self)
+            # Replace placeholders in headers, query, cookies, and body
+            # Note: we pass state and current_node so that node handles like {{ other_node.true_path }} work
+            replaced_headers = replace_placeholders(data=self.headers, values=None, state=self.state, current_node=self)
             replaced_query = replace_placeholders(data=self.query, values=replaced_url_vars, state=self.state, current_node=self)
             replaced_cookies = replace_placeholders(data=self.cookies, values=replaced_url_vars, state=self.state, current_node=self)
             replaced_body = replace_placeholders(data=self.body, values=replaced_url_vars, state=self.state, current_node=self)
 
-            # Log headers if present
+            # Log headers - BEFORE and AFTER replacement
+            print(f"[HTTP] Headers (ORIGINAL): {json.dumps(self.headers, indent=2) if self.headers else 'None'}")
+            print(f"[HTTP] Headers (REPLACED): {json.dumps(replaced_headers, indent=2) if replaced_headers else 'None'}")
+
+            # Check for unreplaced placeholders in headers
             if replaced_headers:
-                print(f"[HTTP] Headers: {json.dumps(replaced_headers, indent=2)}")
+                for key, value in replaced_headers.items():
+                    if '{{' in str(value) or '}}' in str(value):
+                        print(f"[HTTP] ⚠️  WARNING: Unreplaced placeholder in header '{key}': {value}")
 
             # Log query params if present
             if replaced_query:
