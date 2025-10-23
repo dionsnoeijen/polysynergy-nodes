@@ -50,6 +50,18 @@ class VariableList(Node):
                 except json.JSONDecodeError as e:
                     raise ValueError(f"Input string is not valid JSON: {str(e)}")
 
+            # If it's a list with a single string element that looks like JSON, parse it
+            # This happens when a string is connected to the value input (framework wraps it in a list)
+            elif isinstance(self.value, list) and len(self.value) == 1 and isinstance(self.value[0], str):
+                try:
+                    parsed = json.loads(self.value[0])
+                    if isinstance(parsed, list):
+                        self.value = parsed
+                    # If parsed is not a list, keep the original list with 1 element
+                except (json.JSONDecodeError, TypeError):
+                    # Not JSON, keep as is
+                    pass
+
             # Ensure value is a list
             if not isinstance(self.value, list):
                 self.value = [self.value]
