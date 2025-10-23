@@ -43,12 +43,16 @@ class VariableList(Node):
 
     async def execute(self):
         try:
-            # Auto-parse JSON string to list
-            if isinstance(self.value, str):
+            # Auto-parse JSON string/bytes to list
+            if isinstance(self.value, (str, bytes)):
                 try:
-                    self.value = json.loads(self.value)
+                    # Decode bytes to string if needed
+                    value_str = self.value.decode('utf-8') if isinstance(self.value, bytes) else self.value
+                    self.value = json.loads(value_str)
                 except json.JSONDecodeError as e:
                     raise ValueError(f"Input string is not valid JSON: {str(e)}")
+                except UnicodeDecodeError as e:
+                    raise ValueError(f"Cannot decode bytes to string: {str(e)}")
 
             # If it's a list with a single string element that looks like JSON, parse it
             # This happens when a string is connected to the value input (framework wraps it in a list)
