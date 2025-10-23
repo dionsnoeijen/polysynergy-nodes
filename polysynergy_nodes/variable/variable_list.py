@@ -13,10 +13,10 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
     version=1.0
 )
 class VariableList(Node):
-    value: list = NodeVariableSettings(
+    value: list | str = NodeVariableSettings(
         label="Value",
         dock=True,
-        has_out=True,
+        has_in=True,
         default=[]
     )
 
@@ -26,10 +26,42 @@ class VariableList(Node):
         default=[]
     )
 
-    true_path: bool | list = PathSettings(label="List")
+    output_list: list = NodeVariableSettings(
+        label="Output List",
+        has_out=True,
+        info="The resulting list"
+    )
+
+    true_path: bool | list = PathSettings(
+        label="List",
+        info="Returns the list value"
+    )
+    false_path: bool | dict = PathSettings(
+        label="Error",
+        info="Triggered if parsing fails"
+    )
 
     async def execute(self):
-        if self.append:
-            self.value.append(self.append)
+        try:
+            # Auto-parse JSON string to list
+            if isinstance(self.value, str):
+                try:
+                    self.value = json.loads(self.value)
+                except json.JSONDecodeError as e:
+                    raise ValueError(f"Input string is not valid JSON: {str(e)}")
 
-        self.true_path = self.value
+            # Ensure value is a list
+            if not isinstance(self.value, list):
+                self.value = [self.value]
+
+            if self.append:
+                self.value.append(self.append)
+
+            self.output_list = self.value
+            self.true_path = self.value
+            self.false_path = False
+
+        except Exception as e:
+            self.false_path = {"error": str(e)}
+            self.true_path = False
+            self.output_list = []
