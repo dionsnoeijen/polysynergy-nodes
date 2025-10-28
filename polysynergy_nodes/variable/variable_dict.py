@@ -1,7 +1,7 @@
 import json
 
 from polysynergy_node_runner.execution_context.replace_placeholders import replace_placeholders
-from polysynergy_node_runner.setup_context.dock_property import dock_dict
+from polysynergy_node_runner.setup_context.dock_property import dock_dict, dock_property
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
@@ -32,6 +32,16 @@ class VariableDict(Node):
         ),
         has_in=True,
         info="Dynamically add keys and connect dicts to wrap them"
+    )
+
+    operation: str = NodeVariableSettings(
+        label="Operation",
+        dock=dock_property(select_values={
+            "merge": "Merge - Update/overwrite keys",
+            "append_or_extend": "Append/Extend - Smart list operations"
+        }),
+        default="merge",
+        info="Merge updates dict keys. Append/Extend adds to lists (auto-detects single item vs multiple items)"
     )
 
     value_as_json_string: str = NodeVariableSettings(label="Value as Json String", has_out=True)
@@ -95,9 +105,33 @@ class VariableDict(Node):
                 # Get all incoming dicts on the merge handle
                 merge_dicts = self._get_all_merge_inputs()
 
-                # Merge all incoming dicts
+                print(f"[VariableDict DEBUG] value BEFORE merge: {self.value}")
+                print(f"[VariableDict DEBUG] merge_dicts: {merge_dicts}")
+                print(f"[VariableDict DEBUG] operation: {self.operation}")
+
+                # Merge all incoming dicts with selected operation
                 for merge_dict in merge_dicts:
-                    self.value.update(merge_dict)
+                    if self.operation == "append_or_extend":
+                        # Smart list operations: auto-detect append vs extend
+                        for key, new_value in merge_dict.items():
+                            print(f"[VariableDict DEBUG] Processing key='{key}', new_value='{new_value}'")
+                            if key in self.value and isinstance(self.value[key], list):
+                                # Key exists and is a list
+                                if isinstance(new_value, list):
+                                    # New value is list → extend
+                                    print(f"[VariableDict DEBUG] EXTENDING list with: {new_value}")
+                                    self.value[key].extend(new_value)
+                                else:
+                                    # New value is single item → append
+                                    print(f"[VariableDict DEBUG] APPENDING item: {new_value}")
+                                    self.value[key].append(new_value)
+                            else:
+                                # Key doesn't exist or not a list → fallback to merge
+                                print(f"[VariableDict DEBUG] MERGING (key doesn't exist or not list): {key} = {new_value}")
+                                self.value[key] = new_value
+                    else:  # "merge" (default)
+                        # Original behavior: overwrite keys
+                        self.value.update(merge_dict)
 
             # Try to serialize to JSON, but gracefully handle non-serializable objects like bytes
             try:
