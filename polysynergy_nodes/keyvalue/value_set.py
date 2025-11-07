@@ -57,6 +57,7 @@ class KeyValueValueSet(Node):
                 self.false_path = {
                     "error": "Missing tenant_id or project_id in environment"
                 }
+                self.true_path = False
                 return
 
             table = db_client.get_table()
@@ -76,6 +77,8 @@ class KeyValueValueSet(Node):
             })
 
             self.true_path = processed_value
+            self.false_path = False
 
         except Exception as e:
             self.false_path = NodeError.format(e)
+            self.true_path = False

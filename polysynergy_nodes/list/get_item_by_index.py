@@ -1,3 +1,4 @@
+from typing import Any
 from polysynergy_node_runner.setup_context.dock_property import dock_property
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
@@ -35,7 +36,7 @@ class GetItemByIndex(Node):
         info="If True, returns error path for out-of-bounds; if False, raises exception"
     )
 
-    default_value: any = NodeVariableSettings(
+    default_value: Any = NodeVariableSettings(
         label="Default Value",
         default=None,
         dock=True,
@@ -43,7 +44,7 @@ class GetItemByIndex(Node):
         info="Value to return if index is out of bounds (only in safe mode)"
     )
 
-    item: any = NodeVariableSettings(
+    item: Any = NodeVariableSettings(
         label="Item",
         has_out=True,
         info="The item at the specified index"
@@ -55,7 +56,7 @@ class GetItemByIndex(Node):
         info="Total length of the list"
     )
 
-    true_path: bool | any = PathSettings(
+    true_path: bool | Any = PathSettings(
         label="Item Found",
         info="Returns the item at the specified index"
     )

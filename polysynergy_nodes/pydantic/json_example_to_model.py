@@ -1,5 +1,5 @@
 import json
-from typing import Any, List, Union
+from typing import Any, List
 from pydantic import BaseModel, create_model
 
 from polysynergy_node_runner.setup_context.dock_property import dock_json
@@ -83,8 +83,14 @@ class JsonExampleToModel(ServiceNode):
 
         elif isinstance(value, list):
             if not value:
-                # Empty list - can't infer item type
-                return (List[Any], [] if not self.make_optional else None)
+                # Empty list - create a minimal placeholder model for OpenAI compatibility
+                # This ensures the schema has proper type information even for empty arrays
+                placeholder_model = create_model(
+                    f"{field_name}Item",
+                    __module__=__name__,
+                    # Empty model with no fields - will accept any object structure
+                )
+                return (List[placeholder_model], [] if not self.make_optional else None)
 
             first_item = value[0]
 

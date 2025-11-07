@@ -62,19 +62,26 @@ class KeyValueValueGet(Node):
                     self.false_path = {
                         "error": "Access denied - item belongs to different tenant/project"
                     }
+                    self.true_path = False
                     return
 
                 value = item.get("Value")
                 if value is not None:
                     self.true_path = value
+                    self.false_path = False
+                    print(f"GET SUCCESS: key={sk}, value={value}, true_path={self.true_path}, false_path={self.false_path}")
                 else:
                     self.false_path = {
                         "error": f"Key '{sk}' found but has no value"
                     }
+                    self.true_path = False
             else:
                 self.false_path = {
                     "error": f"Key '{sk}' not found"
                 }
+                self.true_path = False
+                print(f"GET FAIL: key={sk} not found, true_path={self.true_path}, false_path={self.false_path}")
 
         except Exception as e:
             self.false_path = NodeError.format(e)
+            self.true_path = False

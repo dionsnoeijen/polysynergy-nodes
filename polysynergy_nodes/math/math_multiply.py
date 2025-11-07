@@ -10,7 +10,7 @@ class MathMultiply(Node):
     a: int | float | str = NodeVariableSettings(default=0, has_in=True, has_out=True, dock=True)
     b: int | float | str = NodeVariableSettings(default=0, has_in=True, has_out=True, dock=True)
 
-    true_path: bool | float = PathSettings(label="Result")
+    true_path: bool | float | int = PathSettings(label="Result")
     false_path: bool | dict = PathSettings(label="Error")
 
     async def execute(self):

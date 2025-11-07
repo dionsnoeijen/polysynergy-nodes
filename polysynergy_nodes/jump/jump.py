@@ -26,7 +26,8 @@ class Jump(Node):
     counter: int = 0
     false_path: bool | dict = PathSettings(label="Error")
 
-    def execute(self):
+    async def execute(self):
+        print(f"\n\n=== JUMP EXECUTE START ===\n\n")
         if self.has_max_retries and self.counter >= self.max_retries:
             self.false_path = {"error": "Max retries reached"}
             return
@@ -34,6 +35,7 @@ class Jump(Node):
         is_retry = self.has_max_retries and self.counter > 0
 
         self.counter += 1
+        print(f"JUMP: Jumping to {self.to} (attempt {self.counter})")
         logger.info(f"Jumping to {self.to} (attempt {self.counter})")
 
         if is_retry and self.retry_timeout > 0:
@@ -41,19 +43,76 @@ class Jump(Node):
             time.sleep(self.retry_timeout)
 
         try:
-            to_node = self.flow.get_node(self.to)
+            to_node = self.state.get_node_by_handle(self.to)
+            if not to_node:
+                raise ValueError(f"Node with handle '{self.to}' not found")
             logger.info(f"Jumping to node: {to_node.__class__.__name__}")
         except ValueError as e:
             self.false_path = {"error": str(e)}
             return
 
-        if to_node.__class__.__name__ != "To":
-            self.false_path = {"error": "You must jump to a \"To\" node"}
+        # Check if it's a To node (class name starts with "To" due to versioning like "ToV1_0")
+        if not to_node.__class__.__name__.startswith("To"):
+            self.false_path = {"error": f"You must jump to a \"To\" node, but found {to_node.__class__.__name__}"}
             return
 
-        nodes_for_jump, jump_end_node = self.find_nodes_for_jump()
+        # Recursively resurrect all nodes forward from TO node
+        # until we hit another Jump node
+        visited = set()
+        all_nodes = []
 
-        for node_for_jump in nodes_for_jump:
-            node_for_jump.resurrect()
+        def collect_forward(node):
+            """Collect all nodes going forward via out_connections"""
+            if node.id in visited:
+                return
+            visited.add(node.id)
 
-        self.flow.execute_node(to_node)
+            # Skip Jump nodes to prevent infinite recursion
+            if node.__class__.__name__.startswith("Jump"):
+                return
+
+            all_nodes.append(node)
+            print(f"    Collected: {node.__class__.__name__} ({node.handle})")
+
+            # Continue forward through ALL out_connections (both flow and data)
+            for connection in node.get_out_connections():
+                target_node = self.state.get_node_by_id(connection.target_node_id)
+                if target_node:
+                    print(f"      -> following connection to {target_node.__class__.__name__} ({target_node.handle})")
+                    collect_forward(target_node)
+
+        print(f"=== Collecting nodes from TO forward ===")
+        collect_forward(to_node)
+        print(f"=== Found {len(all_nodes)} nodes to resurrect ===")
+
+        # Resurrect all nodes AND their connections
+        for node in all_nodes:
+            print(f"  Resurrecting: {node.__class__.__name__} ({node.handle})")
+            node.resurrect()
+            # FORCEFULLY resurrect all connections
+            for conn in node.get_out_connections():
+                if conn.is_killer():
+                    print(f"    Connection was killer, force resurrecting: {conn.source_handle} -> {conn.target_handle}")
+                    conn.resurrect()
+                if conn.is_killer():
+                    print(f"    ERROR: Connection STILL killer after force resurrect!")
+            for conn in node.get_in_connections():
+                if conn.is_killer():
+                    conn.resurrect()
+
+        # Resurrect TO node
+        to_node.resurrect()
+
+        # Execute TO which triggers the flow
+        print(f"=== Executing TO ===")
+        await self.flow.execute_node(to_node)
+
+        # After execution, resurrect all nodes again
+        # This is critical because connections may have been killed during execution
+        print(f"=== Re-resurrecting all nodes after execution ===")
+        for node in all_nodes:
+            print(f"  Re-resurrecting: {node.__class__.__name__} ({node.handle})")
+            node.resurrect()
+        to_node.resurrect()
+
+        print(f"=== JUMP COMPLETE ===\n\n")
