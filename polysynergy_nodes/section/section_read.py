@@ -38,6 +38,13 @@ class SectionRead(Node):
         info="The section to read from. Frontend will populate this dropdown with available sections from the portal store."
     )
 
+    record_id: str = NodeVariableSettings(
+        label="Record ID",
+        dock=True,
+        has_in=True,
+        info="The UUID of the record to read"
+    )
+
     # Paths
     true_path: bool | dict = PathSettings(label="Found")
     false_path: bool | dict = PathSettings(label="Not Found / Error")

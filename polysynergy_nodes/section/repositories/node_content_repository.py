@@ -5,8 +5,22 @@ import json
 from uuid import UUID
 from typing import Any, Optional
 from datetime import datetime, timezone, date
+from decimal import Decimal
 
 from sqlalchemy import create_engine, text
+
+
+class DecimalEncoder(json.JSONEncoder):
+    """Custom JSON encoder that handles Decimal, UUID, datetime types."""
+    def default(self, obj):
+        if isinstance(obj, Decimal):
+            # Convert Decimal to float
+            return float(obj)
+        elif isinstance(obj, UUID):
+            return str(obj)
+        elif isinstance(obj, (datetime, date)):
+            return obj.isoformat()
+        return super().default(obj)
 
 
 class NodeContentRepository:
@@ -92,7 +106,7 @@ class NodeContentRepository:
         """
         Serialize database result for JSON output.
 
-        Converts UUID, datetime, and other non-JSON-serializable types to strings.
+        Converts UUID, datetime, Decimal, and other non-JSON-serializable types to strings.
         """
         result = {}
         for key, value in row_mapping.items():
@@ -100,6 +114,9 @@ class NodeContentRepository:
                 result[key] = str(value)
             elif isinstance(value, (datetime, date)):
                 result[key] = value.isoformat()
+            elif isinstance(value, Decimal):
+                # Convert Decimal to float for JSON serialization
+                result[key] = float(value)
             else:
                 result[key] = value
         return result

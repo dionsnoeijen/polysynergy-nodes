@@ -135,7 +135,7 @@ class FormatDateTime(Node):
         """Format datetime according to specified format"""
         # Handle special format cases
         format_lower = self.format_string.lower()
-        
+
         if format_lower == "iso8601":
             return dt.isoformat()
         elif format_lower == "timestamp":
@@ -144,6 +144,9 @@ class FormatDateTime(Node):
             return dt.strftime("%a, %d %b %Y %H:%M:%S %z")
         elif format_lower == "rfc3339":
             return dt.isoformat() + "Z" if dt.tzinfo is None else dt.isoformat()
+        elif format_lower == "microsoft":
+            # Microsoft Graph API format: yyyy-mm-ddThh:mm:ss.sssZ
+            return dt.strftime("%Y-%m-%dT%H:%M:%S.%f")[:-3] + "Z"
         else:
             # Use custom format string
             return dt.strftime(self.format_string)
@@ -155,6 +158,7 @@ class FormatDateTime(Node):
             "timestamp": "Unix timestamp",
             "rfc2822": "RFC 2822 format",
             "rfc3339": "RFC 3339 format",
+            "microsoft": "Microsoft Graph API format (yyyy-mm-ddThh:mm:ss.sssZ)",
             "%Y-%m-%d": "Date only (YYYY-MM-DD)",
             "%Y-%m-%d %H:%M:%S": "Standard datetime",
             "%B %d, %Y": "Full month name",

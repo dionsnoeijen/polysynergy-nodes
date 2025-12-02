@@ -9,31 +9,46 @@ class TestVariableIntegerNode(unittest.TestCase):
 
     def test_positive_integer(self):
         self.node.value = 42
-        result = asyncio.run(self.node.execute())
-        
-        self.assertEqual(result, 42)
-        self.assertEqual(self.node.value, 42)
+        asyncio.run(self.node.execute())
+
+        self.assertEqual(self.node.true_path, 42)
 
     def test_negative_integer(self):
         self.node.value = -15
-        result = asyncio.run(self.node.execute())
-        
-        self.assertEqual(result, -15)
-        self.assertEqual(self.node.value, -15)
+        asyncio.run(self.node.execute())
+
+        self.assertEqual(self.node.true_path, -15)
 
     def test_zero(self):
         self.node.value = 0
-        result = asyncio.run(self.node.execute())
-        
-        self.assertEqual(result, 0)
-        self.assertEqual(self.node.value, 0)
+        asyncio.run(self.node.execute())
+
+        self.assertEqual(self.node.true_path, 0)
 
     def test_large_integer(self):
         self.node.value = 999999999
-        result = asyncio.run(self.node.execute())
-        
-        self.assertEqual(result, 999999999)
-        self.assertEqual(self.node.value, 999999999)
+        asyncio.run(self.node.execute())
+
+        self.assertEqual(self.node.true_path, 999999999)
+
+    def test_string_conversion(self):
+        self.node.value = "123"
+        asyncio.run(self.node.execute())
+
+        self.assertEqual(self.node.true_path, 123)
+
+    def test_float_string_conversion(self):
+        self.node.value = "123.7"
+        asyncio.run(self.node.execute())
+
+        self.assertEqual(self.node.true_path, 123)
+
+    def test_placeholder_replacement(self):
+        self.node.value = "{{count}}"
+        self.node.values = {"count": "42"}
+        asyncio.run(self.node.execute())
+
+        self.assertEqual(self.node.true_path, 42)
 
 
 if __name__ == "__main__":

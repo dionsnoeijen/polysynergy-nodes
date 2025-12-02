@@ -27,7 +27,17 @@ class LoopEnd(Node):
             self.true_path = True
             return
 
+        # If there's only one source, pass its value through as-is
+        # This is the common case in loops - just pass through whatever the last node produced
         if len(sources) == 1:
+            self.true_path = sources[0].true_path
+            return
+
+        # Multiple sources: collect all results into an array
+        # But if all sources have the same value (e.g., multiple iterations of same node),
+        # just pass through that value once
+        unique_values = list(set(id(s.true_path) for s in sources))
+        if len(unique_values) == 1:
             self.true_path = sources[0].true_path
             return
 

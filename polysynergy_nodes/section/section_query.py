@@ -1,6 +1,7 @@
 import asyncio
 from uuid import UUID
 
+from polysynergy_node_runner.execution_context.replace_placeholders import replace_placeholders
 from polysynergy_node_runner.setup_context.dock_property import dock_property, dock_text_area
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
@@ -18,6 +19,7 @@ from polysynergy_nodes.section.repositories.node_content_repository import NodeC
     category="section",
     icon='database.svg',
     version=1.0,
+    stateful=False,  # Must be non-stateful to work correctly in loops
 )
 class SectionQuery(Node):
     """
@@ -55,7 +57,15 @@ class SectionQuery(Node):
         dock=dock_text_area(),
         has_in=True,
         default="",
-        info="SQL WHERE condition (without 'WHERE' keyword). Example: created_at > '2024-01-01' AND status = 'active'"
+        info="SQL WHERE condition (without 'WHERE' keyword). Example: created_at > '2024-01-01' AND status = 'active'. Supports placeholders like {{variable_name}}"
+    )
+
+    values: dict[str, str] = NodeVariableSettings(
+        label="Values",
+        dock=True,
+        has_in=True,
+        default={},
+        info="Dictionary of values for placeholder replacement in WHERE condition"
     )
 
     limit: int = NodeVariableSettings(
@@ -85,9 +95,9 @@ class SectionQuery(Node):
     false_path: bool | dict = PathSettings(label="Error")
 
     async def execute(self):
-        """Execute query with WHERE condition"""
         try:
             print(f"\n[Section Query] ========== Executing Query with WHERE ==========")
+            print(f"[Section Query] Instance ID: {id(self)} ({self.handle})")
             print(f"[Section Query] Section ID: {self.section_id}")
             print(f"[Section Query] WHERE: {self.where_clause}")
             print(f"[Section Query] Limit: {self.limit}, Offset: {self.offset}")
@@ -95,6 +105,31 @@ class SectionQuery(Node):
             # Validate inputs
             if not self.section_id:
                 raise ValueError("Section ID is required")
+
+            # Ensure values is a dict
+            if not isinstance(self.values, dict):
+                self.values = {}
+
+            # Replace placeholders in WHERE clause (use local variable to preserve original)
+            where_clause_resolved = self.where_clause
+            if where_clause_resolved:
+                # First replace placeholders in values dict itself
+                replaced_values = replace_placeholders(
+                    data=self.values,
+                    values=self.values,
+                    state=self.state,
+                    current_node=self
+                )
+
+                # Then replace placeholders in WHERE clause
+                where_clause_resolved = replace_placeholders(
+                    data=where_clause_resolved,
+                    values=replaced_values,
+                    state=self.state,
+                    current_node=self
+                )
+
+                print(f"[Section Query] WHERE after placeholder replacement: {where_clause_resolved}")
 
             # Convert section_id to UUID
             try:
@@ -115,11 +150,10 @@ class SectionQuery(Node):
                 # Execute custom query
                 content_repo = NodeContentRepository(section_info)
 
-                if self.where_clause:
+                if where_clause_resolved:
                     # Execute with custom WHERE clause
-                    print(f"[Section Query] Executing custom WHERE: {self.where_clause}")
                     records_list = content_repo.query_with_where(
-                        where_clause=self.where_clause,
+                        where_clause=where_clause_resolved,
                         limit=self.limit,
                         offset=self.offset
                     )
@@ -141,10 +175,23 @@ class SectionQuery(Node):
 
             self.count = len(records_list)
 
-            # Take success path
-            self.true_path = records_list
+            # Check if we have results
+            if len(records_list) > 0:
+                # Take success path with results
+                self.true_path = records_list
+                self.false_path = False
+            else:
+                # No results found - take false path
+                print(f"[Section Query] ⚠ No records found matching query")
+                self.false_path = {
+                    "error": "No records found",
+                    "message": "The query executed successfully but returned no results",
+                    "query": where_clause_resolved if where_clause_resolved else "No WHERE clause"
+                }
+                self.true_path = False
 
         except Exception as e:
             print(f"[Section Query] ✗ Error: {str(e)}")
             self.count = 0
             self.false_path = NodeError.format(e)
+            self.true_path = False

@@ -9,7 +9,7 @@ from polysynergy_node_runner.setup_context.node_decorator import node
 )
 class ContinueLoop(Node):
 
-    def execute(self):
+    async def execute(self):
         loop = self.is_in_loop()
         if loop:
             loop.continue_loop()

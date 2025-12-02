@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 )
 class LogInfo(Node):
 
-    message: str | dict = NodeVariableSettings(
+    message: str | dict | list | int | float = NodeVariableSettings(
         label="Message",
         dock=True,
         has_in=True

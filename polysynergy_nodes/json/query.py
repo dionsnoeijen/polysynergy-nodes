@@ -14,18 +14,19 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
     icon="json.svg"
 )
 class JsonQuery(Node):
-    json_input_as_dict: dict = NodeVariableSettings(label="JSON Input as Dict", has_in=True)
+    json_input_as_dict: dict | list = NodeVariableSettings(label="JSON Input as Dict or List", has_in=True)
     json_input_as_string: str = NodeVariableSettings(label="JSON Input as String", dock=dock_json(), has_in=True)
     query: str = NodeVariableSettings(label="JMESPath Query", dock=True, has_in=True)
 
     result_as_string: str = NodeVariableSettings(label="Query Result (String)", has_out=True)
 
     false_path: bool | dict = PathSettings(label="Error")
-    true_path: bool | str | dict | list = PathSettings(label="Result (str, dict, list)")
+    true_path: bool | str | int | float | dict | list = PathSettings(label="Result (str, int, float, dict, list)")
 
     def execute(self):
         try:
-            if isinstance(self.json_input_as_dict, dict) and self.json_input_as_dict:
+            # Accept dict or list as direct input
+            if isinstance(self.json_input_as_dict, (dict, list)) and self.json_input_as_dict:
                 parsed_json = self.json_input_as_dict
             else:
                 # Sometimes, you might have targeted a value through a placeholder

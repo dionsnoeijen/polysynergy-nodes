@@ -38,5 +38,29 @@ class TestJsonQueryNode(unittest.TestCase):
         self.node.execute()
         self.assertIsNone(self.node.true_path)
 
+    def test_query_returns_integer(self):
+        self.node.json_input_as_dict = {"count": 42, "price": 99.99}
+        self.node.json_input_as_string = ""
+        self.node.query = "count"
+        self.node.execute()
+        self.assertEqual(self.node.true_path, 42)
+        self.assertIsInstance(self.node.true_path, int)
+
+    def test_query_returns_float(self):
+        self.node.json_input_as_dict = {"count": 42, "price": 99.99}
+        self.node.json_input_as_string = ""
+        self.node.query = "price"
+        self.node.execute()
+        self.assertEqual(self.node.true_path, 99.99)
+        self.assertIsInstance(self.node.true_path, float)
+
+    def test_query_returns_boolean(self):
+        self.node.json_input_as_dict = {"active": True, "disabled": False}
+        self.node.json_input_as_string = ""
+        self.node.query = "active"
+        self.node.execute()
+        self.assertEqual(self.node.true_path, True)
+        self.assertIsInstance(self.node.true_path, bool)
+
 if __name__ == '__main__':
     unittest.main()
