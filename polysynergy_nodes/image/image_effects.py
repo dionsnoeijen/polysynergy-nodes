@@ -9,7 +9,7 @@ from polysynergy_node_runner.setup_context.node_decorator import node
 from polysynergy_node_runner.setup_context.node_error import NodeError
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings, dock_property
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
-from polysynergy_nodes.qr.services.s3_image_service import S3ImageService
+from polysynergy_node_runner.services.s3_service import S3Service
 from polysynergy_nodes.image.types import Image
 
 
@@ -295,7 +295,7 @@ class ImageEffects(Node):
                 image_data = img_bytes.getvalue()
                 
                 # Upload to S3
-                s3_service = S3ImageService()
+                s3_service = S3Service()
                 s3_key = self.generate_s3_key(original_metadata)
                 
                 upload_result = s3_service.upload_image(

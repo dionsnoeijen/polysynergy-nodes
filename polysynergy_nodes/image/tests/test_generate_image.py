@@ -15,7 +15,7 @@ class TestGenerateImage(unittest.TestCase):
         self.node.image_url = None
         self.node.save_path = "generated/images/"  # Set default save_path
 
-    @patch('polysynergy_nodes.image.generate_image.S3ImageService')
+    @patch('polysynergy_nodes.image.generate_image.S3Service')
     @patch('polysynergy_nodes.image.generate_image.OpenAI')
     @patch('polysynergy_nodes.image.generate_image.os.getenv')
     def test_generate_image_dall_e_2(self, mock_getenv, mock_openai, mock_s3_service):
@@ -76,7 +76,7 @@ class TestGenerateImage(unittest.TestCase):
         
         self.assertFalse(self.node.false_path)
 
-    @patch('polysynergy_nodes.image.generate_image.S3ImageService')
+    @patch('polysynergy_nodes.image.generate_image.S3Service')
     @patch('polysynergy_nodes.image.generate_image.OpenAI')
     @patch('polysynergy_nodes.image.generate_image.os.getenv')
     def test_generate_image_dall_e_3(self, mock_getenv, mock_openai, mock_s3_service):
@@ -237,7 +237,7 @@ class TestGenerateImage(unittest.TestCase):
         
         self.assertIn("OpenAI image generation failed", str(context.exception))
 
-    @patch('polysynergy_nodes.image.generate_image.S3ImageService')
+    @patch('polysynergy_nodes.image.generate_image.S3Service')
     @patch('polysynergy_nodes.image.generate_image.OpenAI')
     @patch('polysynergy_nodes.image.generate_image.os.getenv')
     def test_s3_upload_failure(self, mock_getenv, mock_openai, mock_s3_service):
@@ -279,7 +279,7 @@ class TestGenerateImage(unittest.TestCase):
         self.assertIsNone(self.node.generated_image)
         self.assertIsNone(self.node.image_url)
 
-    @patch('polysynergy_nodes.image.generate_image.S3ImageService')
+    @patch('polysynergy_nodes.image.generate_image.S3Service')
     @patch('polysynergy_nodes.image.generate_image.OpenAI')
     @patch('polysynergy_nodes.image.generate_image.os.getenv')
     def test_long_prompt_truncation(self, mock_getenv, mock_openai, mock_s3_service):
@@ -331,7 +331,7 @@ class TestGenerateImage(unittest.TestCase):
             n=1
         )
 
-    @patch('polysynergy_nodes.image.generate_image.S3ImageService')
+    @patch('polysynergy_nodes.image.generate_image.S3Service')
     @patch('polysynergy_nodes.image.generate_image.OpenAI')
     @patch('polysynergy_nodes.image.generate_image.os.getenv')
     def test_rerender_enabled_generates_new_image(self, mock_getenv, mock_openai, mock_s3_service):
@@ -382,7 +382,7 @@ class TestGenerateImage(unittest.TestCase):
         self.assertIsNotNone(self.node.generated_image)
         self.assertFalse(self.node.generated_image['metadata']['generation']['cached'])
 
-    @patch('polysynergy_nodes.image.generate_image.S3ImageService')
+    @patch('polysynergy_nodes.image.generate_image.S3Service')
     @patch('polysynergy_nodes.image.generate_image.os.getenv')
     def test_rerender_disabled_reuses_existing_image(self, mock_getenv, mock_s3_service):
         """Test that when rerender=False and image exists, it reuses existing image"""
@@ -422,7 +422,7 @@ class TestGenerateImage(unittest.TestCase):
         self.assertTrue(self.node.generated_image['metadata']['generation']['cached'])
         self.assertEqual(self.node.image_url, 'https://example.s3.amazonaws.com/cached_image.png')
 
-    @patch('polysynergy_nodes.image.generate_image.S3ImageService')
+    @patch('polysynergy_nodes.image.generate_image.S3Service')
     @patch('polysynergy_nodes.image.generate_image.OpenAI')
     @patch('polysynergy_nodes.image.generate_image.os.getenv')
     def test_rerender_disabled_generates_if_no_existing_image(self, mock_getenv, mock_openai, mock_s3_service):
@@ -639,7 +639,7 @@ class TestGenerateImage(unittest.TestCase):
         self.assertIn('exec789', key)
         self.assertIn('generated_dalle2_1024x1024', key)
     
-    @patch('polysynergy_nodes.image.generate_image.S3ImageService')
+    @patch('polysynergy_nodes.image.generate_image.S3Service')
     @patch('polysynergy_nodes.image.generate_image.OpenAI')
     @patch('polysynergy_nodes.image.generate_image.os.getenv')
     def test_custom_save_path_end_to_end(self, mock_getenv, mock_openai, mock_s3_service):

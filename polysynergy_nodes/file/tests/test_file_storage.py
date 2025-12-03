@@ -207,7 +207,7 @@ class TestFileStorageNode(unittest.TestCase):
         # Should contain an 8-character hash
         self.assertRegex(result, r"docs/test_file_[a-f0-9]{8}\.txt")
 
-    @patch('polysynergy_nodes.file.file_storage.S3ImageService')
+    @patch('polysynergy_nodes.file.file_storage.S3Service')
     async def test_execute_success_text_file(self, mock_s3_service_class):
         """Test successful execution with text file"""
         # Mock S3 service
@@ -238,7 +238,7 @@ class TestFileStorageNode(unittest.TestCase):
         self.assertIsInstance(self.node.true_path, dict)
         self.assertFalse(self.node.false_path)
 
-    @patch('polysynergy_nodes.file.file_storage.S3ImageService')
+    @patch('polysynergy_nodes.file.file_storage.S3Service')
     async def test_execute_success_json_file(self, mock_s3_service_class):
         """Test successful execution with JSON file"""
         # Mock S3 service
@@ -265,7 +265,7 @@ class TestFileStorageNode(unittest.TestCase):
         self.assertTrue(self.node.file_path.startswith('generated/files/data_'))
         self.assertIn("json", self.node.file_metadata["filename"])
 
-    @patch('polysynergy_nodes.file.file_storage.S3ImageService')
+    @patch('polysynergy_nodes.file.file_storage.S3Service')
     async def test_execute_failure(self, mock_s3_service_class):
         """Test execution failure handling"""
         # Mock S3 service failure

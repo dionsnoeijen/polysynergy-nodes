@@ -14,7 +14,7 @@ class TestCropImage(unittest.TestCase):
         self.node.cropped_image = None
         self.node.image_url = None
 
-    @patch('polysynergy_nodes.image.crop_image.S3ImageService')
+    @patch('polysynergy_nodes.image.crop_image.S3Service')
     @patch('polysynergy_nodes.image.crop_image.requests')
     def test_crop_image_pixels_mode(self, mock_requests, mock_s3_service):
         # Setup mock response for image download

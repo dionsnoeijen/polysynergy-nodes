@@ -5,25 +5,24 @@ import asyncio
 import hashlib
 import mimetypes
 from datetime import datetime
-from typing import Optional, Union
-from pathlib import Path
 
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
 from polysynergy_node_runner.setup_context.node_error import NodeError
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings, dock_property
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
-from polysynergy_nodes.qr.services.s3_image_service import S3ImageService
+from polysynergy_node_runner.services.s3_service import S3Service
 
 
 @node(
     name="File Storage",
     category="file",
-    icon="file_storage.svg"
+    icon="file.svg"
 )
 class FileStorage(Node):
+
     # Content inputs
-    content_data: Union[str, bytes] = NodeVariableSettings(
+    content_data: str | bytes = NodeVariableSettings(
         label="Content Data",
         info="File content as string, bytes, or base64",
         dock=dock_property(
@@ -33,7 +32,7 @@ class FileStorage(Node):
         has_in=True,
         required=True
     )
-    
+
     content_type: str = NodeVariableSettings(
         label="Content Type",
         info="Type of content being stored",
@@ -72,7 +71,7 @@ class FileStorage(Node):
     )
     
     # File naming
-    filename: Optional[str] = NodeVariableSettings(
+    filename: str = NodeVariableSettings(
         label="Filename",
         info="Custom filename (without extension). If empty, auto-generates based on content type",
         dock=dock_property(
@@ -81,8 +80,8 @@ class FileStorage(Node):
         has_in=True
     )
     
-    file_extension: Optional[str] = NodeVariableSettings(
-        label="File Extension",
+    file_extension: str = NodeVariableSettings(
+        label="File Extension (override)",
         info="Custom file extension (with or without dot). Overrides content type extension",
         dock=dock_property(
             placeholder=".txt, .pdf, .json"
@@ -423,12 +422,12 @@ class FileStorage(Node):
             # Generate S3 key
             s3_key = self._generate_s3_key(filename, final_extension)
             
-            # Upload to S3 using the same service as images
+            # Upload to S3
             def _sync_upload():
-                s3_service = S3ImageService()
-                
-                return s3_service.upload_image(
-                    image_data=content_bytes,
+                s3_service = S3Service()
+
+                return s3_service.upload_file(
+                    file_data=content_bytes,
                     key=s3_key,
                     content_type=mime_type,
                     metadata={

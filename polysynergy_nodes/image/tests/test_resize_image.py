@@ -14,7 +14,7 @@ class TestResizeImage(unittest.TestCase):
         self.node.resized_image = None
         self.node.image_url = None
 
-    @patch('polysynergy_nodes.image.resize_image.S3ImageService')
+    @patch('polysynergy_nodes.image.resize_image.S3Service')
     @patch('polysynergy_nodes.image.resize_image.requests')
     def test_resize_image_fit_method(self, mock_requests, mock_s3_service):
         # Setup mock response for image download

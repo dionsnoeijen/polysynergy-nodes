@@ -17,7 +17,7 @@ class TestGenerateQRCode(unittest.TestCase):
         self.node.rerender = True
         self.node.save_path = "generated/qr_codes/"
 
-    @patch('polysynergy_nodes.qr.generate_qr_code.S3ImageService')
+    @patch('polysynergy_nodes.qr.generate_qr_code.S3Service')
     @patch('polysynergy_nodes.qr.generate_qr_code.qrcode')
     def test_generate_simple_qr_code(self, mock_qrcode, mock_s3_service):
         # Setup mocks
@@ -116,7 +116,7 @@ class TestGenerateQRCode(unittest.TestCase):
         self.assertIn("error", self.node.false_path)
         self.assertIn("Border must be between", str(self.node.false_path))
 
-    @patch('polysynergy_nodes.qr.generate_qr_code.S3ImageService')
+    @patch('polysynergy_nodes.qr.generate_qr_code.S3Service')
     @patch('polysynergy_nodes.qr.generate_qr_code.qrcode')
     def test_s3_upload_failure(self, mock_qrcode, mock_s3_service):
         # Setup mocks
@@ -192,7 +192,7 @@ class TestGenerateQRCode(unittest.TestCase):
         self.assertIn('cached_qr_', cached_key)
         self.assertIn('.png', cached_key)
 
-    @patch('polysynergy_nodes.qr.generate_qr_code.S3ImageService')
+    @patch('polysynergy_nodes.qr.generate_qr_code.S3Service')
     @patch('polysynergy_nodes.qr.generate_qr_code.qrcode')
     def test_long_data_truncation_in_metadata(self, mock_qrcode, mock_s3_service):
         # Setup mocks
@@ -233,7 +233,7 @@ class TestGenerateQRCode(unittest.TestCase):
         self.assertIn("...", metadata_data)
         self.assertEqual(len(metadata_data), 103)  # 100 chars + "..."
 
-    @patch('polysynergy_nodes.qr.generate_qr_code.S3ImageService')
+    @patch('polysynergy_nodes.qr.generate_qr_code.S3Service')
     @patch('polysynergy_nodes.qr.generate_qr_code.qrcode')
     def test_custom_colors(self, mock_qrcode, mock_s3_service):
         # Setup mocks

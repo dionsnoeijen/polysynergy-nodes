@@ -9,7 +9,7 @@ from polysynergy_node_runner.setup_context.node_decorator import node
 from polysynergy_node_runner.setup_context.node_error import NodeError
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings, dock_property
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
-from polysynergy_nodes.qr.services.s3_image_service import S3ImageService
+from polysynergy_node_runner.services.s3_service import S3Service
 from polysynergy_nodes.image.types import Image
 
 
@@ -290,7 +290,7 @@ class GenerateImage(Node):
     async def check_existing_image(self, s3_key: str) -> dict:
         """Check if an image already exists at the given S3 key"""
         def _sync_check():
-            s3_service = S3ImageService()
+            s3_service = S3Service()
             try:
                 # Try to get existing image metadata
                 result = s3_service.get_image_metadata(s3_key)
@@ -360,7 +360,7 @@ class GenerateImage(Node):
             
             # Upload to S3
             def _sync_upload():
-                s3_service = S3ImageService()
+                s3_service = S3Service()
                 
                 return s3_service.upload_image(
                     image_data=image_data,

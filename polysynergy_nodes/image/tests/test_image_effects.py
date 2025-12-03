@@ -14,7 +14,7 @@ class TestImageEffects(unittest.TestCase):
         self.node.processed_image = None
         self.node.image_url = None
 
-    @patch('polysynergy_nodes.image.image_effects.S3ImageService')
+    @patch('polysynergy_nodes.image.image_effects.S3Service')
     @patch('polysynergy_nodes.image.image_effects.requests')
     def test_apply_effects_complete(self, mock_requests, mock_s3_service):
         # Setup mock response for image download
