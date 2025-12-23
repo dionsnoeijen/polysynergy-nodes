@@ -197,7 +197,8 @@ class NodeContentRepository:
         offset: int = 0,
         order_by: str = "created_at",
         order_direction: str = "DESC",
-        search: Optional[str] = None
+        search: Optional[str] = None,
+        select_columns: list[str] | None = None
     ) -> list[dict]:
         """
         Get all records with pagination and optional search.
@@ -208,6 +209,7 @@ class NodeContentRepository:
             order_by: Column to order by
             order_direction: ASC or DESC
             search: Optional search term (searches all text fields using PostgreSQL FTS)
+            select_columns: Optional list of column names to select. If None, selects all columns.
 
         Returns:
             List of record dicts
@@ -215,6 +217,12 @@ class NodeContentRepository:
         # Validate order_direction
         if order_direction.upper() not in ["ASC", "DESC"]:
             order_direction = "DESC"
+
+        # Build SELECT clause
+        if select_columns:
+            columns_sql = ', '.join([f'"{col}"' for col in select_columns])
+        else:
+            columns_sql = '*'
 
         # Build WHERE clause for search
         where_clause = ""
@@ -243,7 +251,7 @@ class NodeContentRepository:
                 params['search'] = search
 
         sql = f"""
-            SELECT * FROM {self.full_table_name}
+            SELECT {columns_sql} FROM {self.full_table_name}
             {where_clause}
             ORDER BY "{order_by}" {order_direction}
             LIMIT :limit OFFSET :offset
@@ -370,7 +378,8 @@ class NodeContentRepository:
         self,
         where_clause: str,
         limit: int = 100,
-        offset: int = 0
+        offset: int = 0,
+        select_columns: list[str] | None = None
     ) -> list[dict]:
         """
         Execute custom WHERE query.
@@ -379,6 +388,7 @@ class NodeContentRepository:
             where_clause: SQL WHERE condition (without 'WHERE' keyword)
             limit: Max records to return
             offset: Number of records to skip
+            select_columns: Optional list of column names to select. If None, selects all columns.
 
         Returns:
             List of matching records
@@ -388,12 +398,18 @@ class NodeContentRepository:
             user input without proper validation. Use with caution.
         """
         if not where_clause:
-            return self.get_all(limit=limit, offset=offset)
+            return self.get_all(limit=limit, offset=offset, select_columns=select_columns)
+
+        # Build SELECT clause
+        if select_columns:
+            columns_sql = ', '.join([f'"{col}"' for col in select_columns])
+        else:
+            columns_sql = '*'
 
         # Note: This is a simple implementation - production code should
         # validate/sanitize the where_clause to prevent SQL injection
         sql = f"""
-            SELECT * FROM {self.full_table_name}
+            SELECT {columns_sql} FROM {self.full_table_name}
             WHERE {where_clause}
             LIMIT :limit OFFSET :offset
         """

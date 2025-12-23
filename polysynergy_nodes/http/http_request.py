@@ -1,3 +1,4 @@
+import base64
 import json
 import httpx
 import urllib.parse
@@ -40,6 +41,13 @@ class HttpRequest(Node):
     )
     verify_ssl: bool = NodeVariableSettings(label="Verify SSL", dock=True, has_in=True, default=True)
     proxies: dict | None = NodeVariableSettings(label="Proxies", dock=True, has_in=True, default=None)
+    files: list = NodeVariableSettings(
+        label="Files",
+        dock=True,
+        has_in=True,
+        default=[],
+        info='List of files: [{"filename": "test.pdf", "content": bytes/base64, "content_type": "application/pdf", "field_name": "file"}]'
+    )
 
     response_http_status: int = NodeVariableSettings(label="Response HTTP Status", has_out=True)
     response_body: str = NodeVariableSettings(label="Response Body", has_out=True)
@@ -134,20 +142,31 @@ class HttpRequest(Node):
             print(f"[HTTP] Follow redirects: {self.follow_redirects}")
             print(f"[HTTP] Verify SSL: {self.verify_ssl}")
 
+            # Check if we have files to upload
+            has_files = self.files and isinstance(self.files, list) and len(self.files) > 0
+
             is_json = (
                 isinstance(replaced_headers, dict)
                 and replaced_headers.get("Content-Type") == "application/json"
+                and not has_files  # Don't use JSON if we have files
             )
+
+            # Prepare headers - remove Content-Type for multipart (httpx sets it automatically with boundary)
+            request_headers = replaced_headers.copy() if replaced_headers else {}
+            if has_files and "Content-Type" in request_headers:
+                print(f"[HTTP] Removing Content-Type header for multipart request (was: {request_headers['Content-Type']})")
+                del request_headers["Content-Type"]
+
             kwargs = {
                 "method": self.method,
                 "url": replaced_url,
-                "headers": replaced_headers,
+                "headers": request_headers,
                 "params": replaced_query,
                 "cookies": replaced_cookies,
                 "timeout": self.timeout,
                 "follow_redirects": self.follow_redirects,
             }
-            
+
             # Create client with SSL verification setting
             client_kwargs = {
                 "verify": self.verify_ssl,
@@ -155,7 +174,45 @@ class HttpRequest(Node):
             if self.proxies:
                 client_kwargs["proxies"] = self.proxies
 
-            if is_json:
+            # Handle file uploads
+            if has_files:
+                httpx_files = {}
+                for file_item in self.files:
+                    if not isinstance(file_item, dict):
+                        continue
+
+                    field_name = file_item.get("field_name", "file")
+                    filename = file_item.get("filename", "upload")
+                    content = file_item.get("content")
+                    content_type = file_item.get("content_type", "application/octet-stream")
+
+                    if content is None:
+                        continue
+
+                    # Handle base64 encoded content
+                    if isinstance(content, str):
+                        try:
+                            content = base64.b64decode(content)
+                        except Exception:
+                            # Not base64, use as-is (encode to bytes)
+                            content = content.encode('utf-8')
+
+                    httpx_files[field_name] = (filename, content, content_type)
+                    print(f"[HTTP] Adding file: field_name={field_name}, filename={filename}, content_type={content_type}, size={len(content)} bytes")
+
+                kwargs["files"] = httpx_files
+
+                # If body is present with files, treat it as form data
+                if replaced_body and isinstance(replaced_body, str):
+                    try:
+                        form_data = json.loads(replaced_body)
+                        if isinstance(form_data, dict):
+                            kwargs["data"] = form_data
+                            print(f"[HTTP] Adding form data: {list(form_data.keys())}")
+                    except json.JSONDecodeError:
+                        pass  # Not JSON, ignore body for multipart
+
+            elif is_json:
                 try:
                     kwargs["json"] = json.loads(replaced_body) if isinstance(replaced_body, str) else replaced_body
                 except Exception:

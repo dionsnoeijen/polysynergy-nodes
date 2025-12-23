@@ -13,9 +13,9 @@ class Route(Node):
         has_out=True
     )
     headers: dict[str, str] = NodeVariableSettings(label="Headers", has_out=True)
-    body: bytes|str = NodeVariableSettings(label="Body", has_out=True)
-    query: dict[str, str] = NodeVariableSettings(label="Query", has_out=True)
-    cookies: dict[str, str] = NodeVariableSettings(label="Cookies", has_out=True)
+    body: bytes|str = NodeVariableSettings(label="Body", has_out=True, dock=True)
+    query: dict[str, str] = NodeVariableSettings(label="Query", has_out=True, dock=True)
+    cookies: dict[str, str] = NodeVariableSettings(label="Cookies", has_out=True, dock=True)
     route_variables: dict[str, str] = NodeVariableSettings(label="Route Variables", has_out=True)
 
     true_path: bool = PathSettings(default=True, label="Flow")

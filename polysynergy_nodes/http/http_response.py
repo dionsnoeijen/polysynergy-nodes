@@ -21,7 +21,7 @@ class HttpResponse(Node):
     )
 
     body: bytes | str | int | float | bool = NodeVariableSettings(
-        label="Body", dock=dock_text_area(), has_in=True
+        label="Body", dock=dock_text_area(), has_in=True, skip_template=True
     )
 
     http_status: int = NodeVariableSettings(
@@ -69,14 +69,8 @@ class HttpResponse(Node):
                 current_node=self
             )
 
-            # Replace placeholders in body (only if it's not bytes)
-            if not isinstance(self.body, bytes):
-                self.body = replace_placeholders(
-                    data=self.body,
-                    values={},
-                    state=self.state,
-                    current_node=self
-                )
+            # Body is skip_template=True, so we don't process it through Jinja
+            # This allows HTML with React/JSX code (containing {{ }}) to pass through unchanged
 
             merged_headers: dict[str, str] = dict(self.headers)
             if self.content_type:

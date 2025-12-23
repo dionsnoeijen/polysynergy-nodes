@@ -1,10 +1,12 @@
-from jinja2 import Template, TemplateSyntaxError, UndefinedError
-from polysynergy_node_runner.setup_context.dock_property import dock_code_editor
+from jinja2 import TemplateSyntaxError, UndefinedError
+from polysynergy_node_runner.setup_context.dock_property import dock_code_editor, dock_components
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
 from polysynergy_node_runner.setup_context.node_error import NodeError
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
+from polysynergy_node_runner.execution_context.replace_placeholders import replace_placeholders
+from polysynergy_nodes.layout.utils.find_connected_components import find_connected_components
 
 
 @node(
@@ -43,6 +45,7 @@ class StringTemplate(Node):
         dock=dock_code_editor(metadata={"language": "html"}),
         has_in=True,
         required=True,
+        default="",
         info="Jinja2 template string (supports {{ variable }}, {% if %}, {% for %}, etc.)"
     )
 
@@ -53,6 +56,15 @@ class StringTemplate(Node):
         required=False,
         default={},
         info="Dictionary of variables to render in the template"
+    )
+
+    components: dict = NodeVariableSettings(
+        label="Components",
+        has_in=True,
+        dock=dock_components(info="Add component handles and connect component nodes"),
+        required=False,
+        default={},
+        info="Connected component nodes (tables, charts, forms) - use {{ component('key') }}"
     )
 
     true_path: str | bool = PathSettings(
@@ -81,11 +93,24 @@ class StringTemplate(Node):
             return
 
         try:
-            # Create Jinja2 template
-            jinja_template = Template(self.template)
+            # Find all connected components for component() function
+            components = await find_connected_components(self)
 
-            # Render with variables
-            self.true_path = jinja_template.render(**self.variables)
+            # Get state and executable node for backwards traversal
+            state = self._state if hasattr(self, '_state') else None
+            current_node = self._executable_node if hasattr(self, '_executable_node') else None
+
+            # Render template with replace_placeholders which provides:
+            # - backwards traversal for node handles
+            # - component() function for rendering connected components
+            # - flow() function (stub for now)
+            self.true_path = replace_placeholders(
+                self.template,
+                values=self.variables,
+                state=state,
+                current_node=current_node,
+                components=components
+            )
             self.false_path = False
 
         except TemplateSyntaxError as e:

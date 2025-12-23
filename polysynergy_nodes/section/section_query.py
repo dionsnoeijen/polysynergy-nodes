@@ -84,6 +84,15 @@ class SectionQuery(Node):
         info="Number of records to skip (for pagination)"
     )
 
+    select: dict = NodeVariableSettings(
+        label="Select Columns",
+        dock=True,
+        has_in=True,
+        has_out=True,
+        default={},
+        info="Dict with column names as keys to select specific columns. Empty = all columns. After execute, contains values from first record."
+    )
+
     count: int = NodeVariableSettings(
         label="Count",
         has_out=True,
@@ -109,6 +118,15 @@ class SectionQuery(Node):
             # Ensure values is a dict
             if not isinstance(self.values, dict):
                 self.values = {}
+
+            # Ensure select is a dict
+            if not isinstance(self.select, dict):
+                self.select = {}
+
+            # Get select columns from select dict keys
+            select_columns = list(self.select.keys()) if self.select else None
+            if select_columns:
+                print(f"[Section Query] SELECT columns: {select_columns}")
 
             # Replace placeholders in WHERE clause (use local variable to preserve original)
             where_clause_resolved = self.where_clause
@@ -155,14 +173,16 @@ class SectionQuery(Node):
                     records_list = content_repo.query_with_where(
                         where_clause=where_clause_resolved,
                         limit=self.limit,
-                        offset=self.offset
+                        offset=self.offset,
+                        select_columns=select_columns
                     )
                 else:
                     # No WHERE clause - just list all records
                     print(f"[Section Query] No WHERE clause - listing all records")
                     records_list = content_repo.get_all(
                         limit=self.limit,
-                        offset=self.offset
+                        offset=self.offset,
+                        select_columns=select_columns
                     )
 
                 return records_list
@@ -180,6 +200,14 @@ class SectionQuery(Node):
                 # Take success path with results
                 self.true_path = records_list
                 self.false_path = False
+
+                # Populate select dict with values from first record
+                if select_columns:
+                    first_record = records_list[0]
+                    for col in select_columns:
+                        if col in first_record:
+                            self.select[col] = first_record[col]
+                    print(f"[Section Query] Select output: {self.select}")
             else:
                 # No results found - take false path
                 print(f"[Section Query] ⚠ No records found matching query")
