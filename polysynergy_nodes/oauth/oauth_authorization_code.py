@@ -12,7 +12,7 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 from polysynergy_node_runner.setup_context.node_error import NodeError
 
 
-@node(name="OAuth Authorization Code", category="auth", icon="oauth.svg")
+@node(name="OAuth Authorization Code", category="auth", icon="lock.svg")
 class OAuthAuthorizationCode(Node):
 
     init_authorization: str = NodeVariableSettings(

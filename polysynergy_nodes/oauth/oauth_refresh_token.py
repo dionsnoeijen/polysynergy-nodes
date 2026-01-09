@@ -11,7 +11,7 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 from polysynergy_node_runner.setup_context.node_error import NodeError
 
 
-@node(name="OAuth Refresh Token", category="auth", icon="oauth.svg")
+@node(name="OAuth Refresh Token", category="auth", icon="lock.svg")
 class OAuthRefreshToken(Node):
     """OAuth 2.0 Refresh Token Grant flow node - for renewing access tokens"""
 

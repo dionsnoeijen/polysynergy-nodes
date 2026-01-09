@@ -1,6 +1,7 @@
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
 from polysynergy_node_runner.setup_context.node_variable_settings import NodeVariableSettings
+from polysynergy_node_runner.execution_context.replace_placeholders import replace_placeholders
 from typing import Any
 
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
@@ -15,13 +16,15 @@ class IsNotEmpty(Node):
     Returns false_path if value IS empty.
 
     Empty values include: null, false, 0, "0", "", [], {}
+
+    Supports {{placeholder}} syntax in string values.
     """
 
     value: any = NodeVariableSettings(
         label="Value",
         dock=True,
         has_in=True,
-        info="Value to check for emptiness"
+        info="Value to check for emptiness. Supports {{placeholder}} syntax."
     )
 
     true_path: any = PathSettings(label="Value")
@@ -41,10 +44,18 @@ class IsNotEmpty(Node):
         return False
 
     def execute(self):
-        is_empty = self._is_empty(self.value)
+        # Replace placeholders in value
+        resolved_value = replace_placeholders(
+            data=self.value,
+            values={},
+            state=self.state,
+            current_node=self
+        )
+
+        is_empty = self._is_empty(resolved_value)
 
         if not is_empty:
-            self.true_path = self.value
+            self.true_path = resolved_value
             self.false_path = False
         else:
             self.true_path = False

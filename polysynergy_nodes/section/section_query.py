@@ -1,4 +1,5 @@
 import asyncio
+import re
 from uuid import UUID
 
 from polysynergy_node_runner.execution_context.replace_placeholders import replace_placeholders
@@ -30,16 +31,18 @@ class SectionQuery(Node):
 
     The node automatically builds: SELECT * FROM "schema"."table" WHERE {your_condition}
 
-    Example WHERE conditions:
-    - created_at > '2024-01-01'
-    - status = 'active' AND price > 100
-    - email LIKE '%@gmail.com'
+    ## Safe parameterized queries (recommended):
+    Use :param_name syntax for SQL-injection safe queries:
+    - WHERE email = :email AND status = :status
+    - WHERE price > :min_price
+    Then provide values: {"email": "user@example.com", "status": "active", "min_price": 100}
+
+    ## Legacy placeholder replacement:
+    Use {{variable_name}} syntax (values are string-replaced, use with caution):
+    - WHERE created_at > '{{start_date}}'
 
     For simple listing/searching, use Section List instead.
     For complex JOINs or aggregations, use database nodes directly.
-
-    WARNING: This node allows arbitrary WHERE clauses. Ensure input is trusted
-    or properly validated to prevent SQL injection.
     """
 
     section_id: str = NodeVariableSettings(
@@ -57,7 +60,7 @@ class SectionQuery(Node):
         dock=dock_text_area(),
         has_in=True,
         default="",
-        info="SQL WHERE condition (without 'WHERE' keyword). Example: created_at > '2024-01-01' AND status = 'active'. Supports placeholders like {{variable_name}}"
+        info="SQL WHERE condition (without 'WHERE' keyword). Use :param for safe parameterized values, or {{var}} for string replacement. Example: email = :email AND status = :status"
     )
 
     values: dict[str, str] = NodeVariableSettings(
@@ -65,7 +68,7 @@ class SectionQuery(Node):
         dock=True,
         has_in=True,
         default={},
-        info="Dictionary of values for placeholder replacement in WHERE condition"
+        info="Parameter values for :param placeholders (safe) and {{var}} placeholders (legacy). Example: {\"email\": \"test@example.com\", \"status\": \"active\"}"
     )
 
     limit: int = NodeVariableSettings(
@@ -103,6 +106,26 @@ class SectionQuery(Node):
     true_path: bool | list = PathSettings(label="Success")
     false_path: bool | dict = PathSettings(label="Error")
 
+    def _extract_sql_params(self, where_clause: str, values: dict) -> dict:
+        """
+        Extract :param_name placeholders from WHERE clause and build params dict.
+
+        Only includes params that are actually used in the WHERE clause.
+        """
+        # Find all :param_name patterns (but not ::type casts like ::text)
+        param_pattern = r':([a-zA-Z_][a-zA-Z0-9_]*)(?![a-zA-Z0-9_:])'
+        found_params = set(re.findall(param_pattern, where_clause))
+
+        # Build params dict with only the values that are used
+        params = {}
+        for param_name in found_params:
+            if param_name in values:
+                params[param_name] = values[param_name]
+            else:
+                print(f"[Section Query] Warning: Parameter :{param_name} not found in values dict")
+
+        return params
+
     async def execute(self):
         try:
             print(f"\n[Section Query] ========== Executing Query with WHERE ==========")
@@ -128,32 +151,39 @@ class SectionQuery(Node):
             if select_columns:
                 print(f"[Section Query] SELECT columns: {select_columns}")
 
-            # Replace placeholders in WHERE clause (use local variable to preserve original)
+            # Step 1: Replace placeholders in values dict itself (for nested {{var}} references)
+            replaced_values = replace_placeholders(
+                data=self.values,
+                values=self.values,
+                state=self.state,
+                current_node=self
+            )
+            print(f"[Section Query] Values after replacement: {replaced_values}")
+
+            # Step 2: Replace {{var}} placeholders in WHERE clause (legacy style)
             where_clause_resolved = self.where_clause
             if where_clause_resolved:
-                # First replace placeholders in values dict itself
-                replaced_values = replace_placeholders(
-                    data=self.values,
-                    values=self.values,
-                    state=self.state,
-                    current_node=self
-                )
-
-                # Then replace placeholders in WHERE clause
                 where_clause_resolved = replace_placeholders(
                     data=where_clause_resolved,
                     values=replaced_values,
                     state=self.state,
                     current_node=self
                 )
+                print(f"[Section Query] WHERE after {{}} replacement: {where_clause_resolved}")
 
-                print(f"[Section Query] WHERE after placeholder replacement: {where_clause_resolved}")
+            # Step 3: Extract :param placeholders for safe parameterized query
+            sql_params = self._extract_sql_params(where_clause_resolved, replaced_values) if where_clause_resolved else {}
+            if sql_params:
+                print(f"[Section Query] SQL params (safe): {sql_params}")
 
             # Convert section_id to UUID
             try:
                 section_uuid = UUID(self.section_id)
             except (ValueError, AttributeError):
                 raise ValueError(f"Invalid section ID format: {self.section_id}")
+
+            # Capture sql_params for use in nested function
+            query_params = sql_params
 
             # Execute in thread (repositories use sync SQLAlchemy)
             def _sync_query():
@@ -169,12 +199,13 @@ class SectionQuery(Node):
                 content_repo = NodeContentRepository(section_info)
 
                 if where_clause_resolved:
-                    # Execute with custom WHERE clause
+                    # Execute with custom WHERE clause and parameterized values
                     records_list = content_repo.query_with_where(
                         where_clause=where_clause_resolved,
                         limit=self.limit,
                         offset=self.offset,
-                        select_columns=select_columns
+                        select_columns=select_columns,
+                        params=query_params  # Pass :param values for safe parameterized query
                     )
                 else:
                     # No WHERE clause - just list all records

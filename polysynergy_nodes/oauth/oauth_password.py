@@ -11,7 +11,7 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 from polysynergy_node_runner.setup_context.node_error import NodeError
 
 
-@node(name="OAuth Password", category="auth", icon="oauth.svg")
+@node(name="OAuth Password", category="auth", icon="lock.svg")
 class OAuthPassword(Node):
     """OAuth 2.0 Resource Owner Password Credentials Grant flow node"""
 

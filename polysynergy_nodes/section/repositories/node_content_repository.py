@@ -379,23 +379,31 @@ class NodeContentRepository:
         where_clause: str,
         limit: int = 100,
         offset: int = 0,
-        select_columns: list[str] | None = None
+        select_columns: list[str] | None = None,
+        params: dict | None = None
     ) -> list[dict]:
         """
-        Execute custom WHERE query.
+        Execute custom WHERE query with parameterized values.
 
         Args:
-            where_clause: SQL WHERE condition (without 'WHERE' keyword)
+            where_clause: SQL WHERE condition (without 'WHERE' keyword).
+                          Use :param_name for parameterized values (safe from SQL injection).
+                          Example: "status = :status AND price > :min_price"
             limit: Max records to return
             offset: Number of records to skip
             select_columns: Optional list of column names to select. If None, selects all columns.
+            params: Dictionary of parameter values for :param_name placeholders.
+                    Example: {"status": "active", "min_price": 100}
 
         Returns:
             List of matching records
 
-        Warning:
-            This method is potentially unsafe if where_clause contains
-            user input without proper validation. Use with caution.
+        Example:
+            records = repo.query_with_where(
+                where_clause="email = :email AND created_at > :date",
+                params={"email": "user@example.com", "date": "2024-01-01"},
+                limit=10
+            )
         """
         if not where_clause:
             return self.get_all(limit=limit, offset=offset, select_columns=select_columns)
@@ -406,18 +414,19 @@ class NodeContentRepository:
         else:
             columns_sql = '*'
 
-        # Note: This is a simple implementation - production code should
-        # validate/sanitize the where_clause to prevent SQL injection
         sql = f"""
             SELECT {columns_sql} FROM {self.full_table_name}
             WHERE {where_clause}
             LIMIT :limit OFFSET :offset
         """
 
-        params = {"limit": limit, "offset": offset}
+        # Merge user params with limit/offset
+        query_params = {"limit": limit, "offset": offset}
+        if params:
+            query_params.update(params)
 
         with self.content_engine.connect() as conn:
-            result = conn.execute(text(sql), params)
+            result = conn.execute(text(sql), query_params)
             return [self._serialize_result(dict(row._mapping)) for row in result.fetchall()]
 
     def _init_vector_db(self):

@@ -11,7 +11,7 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 from polysynergy_node_runner.setup_context.node_error import NodeError
 
 
-@node(name="OAuth Device Code", category="auth", icon="oauth.svg")
+@node(name="OAuth Device Code", category="auth", icon="lock.svg")
 class OAuthDeviceCode(Node):
     """OAuth 2.0 Device Code Grant flow node - for devices with limited input capability"""
 
