@@ -49,7 +49,8 @@ MainSessionLocal = sessionmaker(bind=main_engine, autoflush=False, autocommit=Fa
 SectionsSessionLocal = sessionmaker(bind=sections_engine, autoflush=False, autocommit=False)
 
 # Export URL for use in other modules (e.g., NodeSectionRepository)
-SECTIONS_DATABASE_URL = str(sections_engine.url)
+# IMPORTANT: Use render_as_string(hide_password=False) because str(url) masks password to '***'
+SECTIONS_DATABASE_URL = sections_engine.url.render_as_string(hide_password=False)
 
 
 @contextmanager
