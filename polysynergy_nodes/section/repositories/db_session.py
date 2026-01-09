@@ -3,33 +3,53 @@
 import os
 from contextlib import contextmanager
 from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 from sqlalchemy.orm import sessionmaker, Session
 
 
-# Get main database URL (where sections are configured)
-# This is the same database that api-local uses for storing section metadata
-MAIN_DATABASE_URL = os.getenv(
-    'DATABASE_URL',
-    'postgresql://polysynergy_user:securepassword@db:5432/ps_db'
-)
+def _create_engine_from_env(prefix: str, defaults: dict):
+    """
+    Create SQLAlchemy engine from individual environment variables.
 
-# Get sections database URL (where actual content tables live)
-# This is where the dynamic section content is stored
-SECTIONS_DATABASE_URL = os.getenv(
-    'SECTIONS_DATABASE_URL',
-    'postgresql://sections_user:sections_password@sections_db:5432/sections_db'
-)
+    Args:
+        prefix: Environment variable prefix (e.g., 'DATABASE' or 'SECTIONS_DB')
+        defaults: Default values for host, port, database, username, password
+    """
+    url = URL.create(
+        drivername="postgresql",
+        username=os.getenv(f'{prefix}_USER', defaults.get('username')),
+        password=os.getenv(f'{prefix}_PASSWORD', defaults.get('password')),
+        host=os.getenv(f'{prefix}_HOST', defaults.get('host')),
+        port=int(os.getenv(f'{prefix}_PORT', defaults.get('port', 5432))),
+        database=os.getenv(f'{prefix}_NAME', defaults.get('database')),
+    )
+    print(f"[db_session] {prefix} -> {url.render_as_string(hide_password=True)}")
+    return create_engine(url, pool_pre_ping=True)
 
-# Debug logging
-print(f"[db_session] MAIN_DATABASE_URL: {MAIN_DATABASE_URL}")
-print(f"[db_session] SECTIONS_DATABASE_URL: {SECTIONS_DATABASE_URL}")
 
-# Create engines and session factories
-main_engine = create_engine(MAIN_DATABASE_URL, pool_pre_ping=True)
+# Create engines from environment variables
+main_engine = _create_engine_from_env('DATABASE', {
+    'username': 'polysynergy_user',
+    'password': 'securepassword',
+    'host': 'db',
+    'port': 5432,
+    'database': 'ps_db',
+})
+
+sections_engine = _create_engine_from_env('SECTIONS_DB', {
+    'username': 'sections_user',
+    'password': 'sections_password',
+    'host': 'sections_db',
+    'port': 5432,
+    'database': 'sections_db',
+})
+
+# Session factories
 MainSessionLocal = sessionmaker(bind=main_engine, autoflush=False, autocommit=False)
-
-sections_engine = create_engine(SECTIONS_DATABASE_URL, pool_pre_ping=True)
 SectionsSessionLocal = sessionmaker(bind=sections_engine, autoflush=False, autocommit=False)
+
+# Export URL for use in other modules (e.g., NodeSectionRepository)
+SECTIONS_DATABASE_URL = str(sections_engine.url)
 
 
 @contextmanager

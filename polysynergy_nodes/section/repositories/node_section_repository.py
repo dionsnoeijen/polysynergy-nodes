@@ -106,11 +106,9 @@ class NodeSectionRepository:
                 port = f":{row.port}" if row.port else ""
                 database_url = f"{database_type}://{auth}{row.host}{port}/{row.database_name}"
         else:
-            # Use default sections_db
-            database_url = os.getenv(
-                'SECTIONS_DATABASE_URL',
-                'postgresql://sections_user:sections_password@sections_db:5432/sections_db'
-            )
+            # Use default sections_db - import the properly built URL
+            from polysynergy_nodes.section.repositories.db_session import SECTIONS_DATABASE_URL
+            database_url = SECTIONS_DATABASE_URL
 
         return {
             "id": row.id,
