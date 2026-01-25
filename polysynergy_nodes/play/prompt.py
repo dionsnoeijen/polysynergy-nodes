@@ -7,7 +7,6 @@ from polysynergy_node_runner.setup_context.node_variable_settings import NodeVar
 @node(
     name="Prompt",
     category="flow",
-    has_enabled_switch=False,
     icon='play.svg'
 )
 class Prompt(Node):
