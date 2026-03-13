@@ -6,18 +6,9 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
 @node(name="ChatWindow", category="hidden")
 class ChatWindow(Node):
-    # User identity (from auth/SSO)
+    session_id: str = NodeVariableSettings(label="Session ID", has_out=True)
     user_id: str = NodeVariableSettings(label="User ID", has_out=True)
-    user_email: str = NodeVariableSettings(label="User Email", has_out=True)
-    user_name: str = NodeVariableSettings(label="User Name", has_out=True)
-
-    # Chat window permissions (from ChatWindowAccess)
-    can_view_flow: bool = NodeVariableSettings(label="Can View Flow", has_out=True)
-    can_edit_flow: bool = NodeVariableSettings(label="Can Edit Flow", has_out=True)
-    can_view_output: bool = NodeVariableSettings(label="Can View Output", has_out=True)
-    show_response_transparency: bool = NodeVariableSettings(
-        label="Show Response Transparency", has_out=True
-    )
+    data: dict = NodeVariableSettings(label="Data", has_out=True)
 
     true_path: bool = PathSettings(default=True, label="Flow")
 

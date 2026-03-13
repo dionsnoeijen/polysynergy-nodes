@@ -70,7 +70,7 @@ class Switch(Node):
             return
 
         if value_to_check in self.branches:
-            for connection in self.out_connections:
+            for connection in self.get_out_connections():
                 handle = connection.source_handle
                 if handle.startswith("branches."):
                     handle = handle[len("branches."):]
@@ -81,5 +81,5 @@ class Switch(Node):
                     if data:
                         self.branches[value_to_check] = data
         else:
-            for connection in self.out_connections:
+            for connection in self.get_out_connections():
                 connection.make_killer()

@@ -517,9 +517,8 @@ HTML_TEMPLATE = '''<!DOCTYPE html>
             post: (route, data) => psApi.call(route, data, 'POST'),
         }};
 
-        // Empty initialData for backwards compatibility
-        // Use psApi to fetch data from your routes instead
-        const initialData = {{}};
+        // Data passed from PolySynergy node variables
+        const initialData = __SPA_INITIAL_DATA__;
     </script>
 
     <script type="text/babel" data-presets="react">
@@ -567,6 +566,14 @@ class Spa(Node):
         dock=True,
         default="",
         info="Base URL for psApi calls (e.g., /api/project/xxx/route/)"
+    )
+
+    data: dict = NodeVariableSettings(
+        label="Data",
+        dock=True,
+        has_in=True,
+        default={},
+        info="Data available as 'initialData' in your React app"
     )
 
     true_path: str = PathSettings(
@@ -663,5 +670,6 @@ class Spa(Node):
         return '\n'.join(transformed)
 
     async def execute(self):
-        # HTML is pre-compiled during codegen
-        self.true_path = self._compiled_html
+        # HTML is pre-compiled during codegen, inject runtime data
+        data_json = json.dumps(self.data if self.data else {})
+        self.true_path = self._compiled_html.replace('__SPA_INITIAL_DATA__', data_json)

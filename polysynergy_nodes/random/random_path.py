@@ -22,12 +22,12 @@ class RandomPath(Node):
 
     async def execute(self):
         try:
-            if not self.out_connections:
+            if not self.get_out_connections():
                 self.false_path = NodeError.format("No output connections available for random selection")
                 return
 
-            chosen_connection = random.choice(self.out_connections)
-            for connection in self.out_connections:
+            chosen_connection = random.choice(self.get_out_connections())
+            for connection in self.get_out_connections():
                 if connection is not chosen_connection:
                     connection.make_killer()
                 else:

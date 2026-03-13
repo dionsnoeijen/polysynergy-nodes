@@ -101,7 +101,7 @@ class TimeRouter(Node):
     )
 
     def execute(self):
-        if not self.out_connections:
+        if not self.get_out_connections():
             self.false_path = {"error": "No output connections available"}
             return
 
@@ -111,7 +111,7 @@ class TimeRouter(Node):
         if dt is None:
             # Invalid datetime - check for default
             if "default" in self.time_ranges:
-                for connection in self.out_connections:
+                for connection in self.get_out_connections():
                     handle = connection.source_handle
                     if handle.startswith("time_ranges."):
                         handle = handle[len("time_ranges."):]
@@ -123,7 +123,7 @@ class TimeRouter(Node):
                 return
             else:
                 # No default - kill all connections and trigger false_path
-                for connection in self.out_connections:
+                for connection in self.get_out_connections():
                     connection.make_killer()
                 self.false_path = {"error": f"Invalid datetime format: {self.datetime_value}"}
                 return
@@ -140,7 +140,7 @@ class TimeRouter(Node):
         
         if matched_range:
             # Kill connections that don't match the selected range
-            for connection in self.out_connections:
+            for connection in self.get_out_connections():
                 handle = connection.source_handle
                 if handle.startswith("time_ranges."):
                     handle = handle[len("time_ranges."):]
@@ -152,7 +152,7 @@ class TimeRouter(Node):
                     self.time_ranges[matched_range] = self.datetime_value
         else:
             # No match found and no default - kill all connections and trigger false_path
-            for connection in self.out_connections:
+            for connection in self.get_out_connections():
                 connection.make_killer()
             self.false_path = {"error": f"No matching time range for: {time_category}"}
 

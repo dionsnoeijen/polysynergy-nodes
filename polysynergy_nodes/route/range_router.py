@@ -49,7 +49,7 @@ class RangeRouter(Node):
     )
 
     def execute(self):
-        if not self.out_connections:
+        if not self.get_out_connections():
             self.false_path = {"error": "No output connections available"}
             return
 
@@ -59,7 +59,7 @@ class RangeRouter(Node):
         except (ValueError, TypeError):
             # Not a number - check for default case
             if "default" in self.ranges:
-                for connection in self.out_connections:
+                for connection in self.get_out_connections():
                     handle = connection.source_handle
                     if handle.startswith("ranges."):
                         handle = handle[len("ranges."):]
@@ -71,7 +71,7 @@ class RangeRouter(Node):
                 return
             else:
                 # No default - kill all connections and trigger false_path
-                for connection in self.out_connections:
+                for connection in self.get_out_connections():
                     connection.make_killer()
                 self.false_path = {"error": f"Value is not numeric: {self.value}"}
                 return
@@ -92,7 +92,7 @@ class RangeRouter(Node):
         
         if matched_range:
             # Kill connections that don't match the selected range
-            for connection in self.out_connections:
+            for connection in self.get_out_connections():
                 handle = connection.source_handle
                 if handle.startswith("ranges."):
                     handle = handle[len("ranges."):]
@@ -104,7 +104,7 @@ class RangeRouter(Node):
                     self.ranges[matched_range] = self.value
         else:
             # No match found and no default - kill all connections and trigger false_path
-            for connection in self.out_connections:
+            for connection in self.get_out_connections():
                 connection.make_killer()
             self.false_path = {"error": f"No matching range for value: {self.value}"}
 

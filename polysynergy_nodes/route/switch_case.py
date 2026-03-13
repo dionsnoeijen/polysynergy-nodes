@@ -14,7 +14,7 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 class SwitchCase(Node):
     out_connections: list[Connection] = []
     
-    value: object = NodeVariableSettings(
+    value: str = NodeVariableSettings(
         label="Value",
         info="The value to match against case keys",
         has_in=True,
@@ -49,7 +49,7 @@ class SwitchCase(Node):
     )
 
     def execute(self):
-        if not self.out_connections:
+        if not self.get_out_connections():
             self.false_path = {"error": "No output connections available"}
             return
 
@@ -67,7 +67,7 @@ class SwitchCase(Node):
         
         if matched_case:
             # Kill connections that don't match the selected case
-            for connection in self.out_connections:
+            for connection in self.get_out_connections():
                 handle = connection.source_handle
                 if handle.startswith("cases."):
                     handle = handle[len("cases."):]
@@ -79,6 +79,6 @@ class SwitchCase(Node):
                     self.cases[matched_case] = self.value
         else:
             # No match found and no default - kill all connections and trigger false_path
-            for connection in self.out_connections:
+            for connection in self.get_out_connections():
                 connection.make_killer()
             self.false_path = {"error": f"No matching case for value: {self.value}"}

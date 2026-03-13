@@ -43,9 +43,12 @@ class VariableJson(Node):
                     raise ValueError("Value is not JSON-serializable")
 
             # JSON-escape all string values before replacement to handle newlines and special chars
+            # Booleans and None need JSON representation: True→true, False→false, None→null
             escaped_values = {}
             for key, val in (self.values or {}).items():
-                if isinstance(val, str):
+                if isinstance(val, bool) or val is None:
+                    escaped_values[key] = json.dumps(val)
+                elif isinstance(val, str):
                     # Escape the string for JSON: convert to JSON string, then strip quotes
                     escaped_values[key] = json.dumps(val)[1:-1]
                 else:

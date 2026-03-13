@@ -49,7 +49,7 @@ class ListContainsRouter(Node):
     )
 
     def execute(self):
-        if not self.out_connections:
+        if not self.get_out_connections():
             self.false_path = {"error": "No output connections available"}
             return
 
@@ -69,7 +69,7 @@ class ListContainsRouter(Node):
         
         if matched_list:
             # Kill connections that don't match the selected list
-            for connection in self.out_connections:
+            for connection in self.get_out_connections():
                 handle = connection.source_handle
                 if handle.startswith("lists."):
                     handle = handle[len("lists."):]
@@ -81,7 +81,7 @@ class ListContainsRouter(Node):
                     self.lists[matched_list] = self.value
         else:
             # No match found and no default - kill all connections and trigger false_path
-            for connection in self.out_connections:
+            for connection in self.get_out_connections():
                 connection.make_killer()
             self.false_path = {"error": f"Value not found in any list: {self.value}"}
 

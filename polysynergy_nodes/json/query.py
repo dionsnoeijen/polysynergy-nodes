@@ -21,7 +21,7 @@ class JsonQuery(Node):
     result_as_string: str = NodeVariableSettings(label="Query Result (String)", has_out=True)
 
     false_path: bool | dict = PathSettings(label="Error")
-    true_path: bool | str | int | float | dict | list = PathSettings(label="Result (str, int, float, dict, list)")
+    true_path: bool | str | int | float | dict | list | bool = PathSettings(label="Result (str, int, float, dict, list, bool)")
 
     def execute(self):
         try:

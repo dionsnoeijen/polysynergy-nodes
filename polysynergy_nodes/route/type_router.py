@@ -100,7 +100,7 @@ class TypeRouter(Node):
     )
 
     def execute(self):
-        if not self.out_connections:
+        if not self.get_out_connections():
             self.false_path = {"error": "No output connections available"}
             return
 
@@ -118,7 +118,7 @@ class TypeRouter(Node):
         
         if matched_type:
             # Kill connections that don't match the selected type
-            for connection in self.out_connections:
+            for connection in self.get_out_connections():
                 handle = connection.source_handle
                 if handle.startswith("types."):
                     handle = handle[len("types."):]
@@ -130,7 +130,7 @@ class TypeRouter(Node):
                     self.types[matched_type] = self.value
         else:
             # No match found and no default - kill all connections and trigger false_path
-            for connection in self.out_connections:
+            for connection in self.get_out_connections():
                 connection.make_killer()
             self.false_path = {"error": f"No matching type case for: {type_name}"}
 
