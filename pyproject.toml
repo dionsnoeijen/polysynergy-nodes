@@ -29,6 +29,8 @@ polysynergy_node_runner = { path = "../node_runner", develop = true }
 pytz = "^2024.2"
 sqlalchemy = "^2.0.44"
 psycopg2-binary = "^2.9.11"
+paramiko = "^3.5.0"
+pymongo = "^4.12.1"
 
 [tool.poetry.extras]
 ocr = ["easyocr"]
