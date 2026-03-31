@@ -9,7 +9,7 @@ from polysynergy_node_runner.setup_context.node_variable_settings import NodeVar
 from polysynergy_node_runner.setup_context.path_settings import PathSettings
 
 @node(
-    name="JSON Query",
+    name="JSON JMES Query",
     category="json",
     icon="json.svg"
 )

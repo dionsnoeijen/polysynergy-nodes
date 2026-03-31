@@ -1,6 +1,8 @@
 import json
+import re
 from typing import Any
 
+from bson import ObjectId
 from polysynergy_node_runner.setup_context.dock_property import dock_property, dock_code_editor
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
@@ -10,6 +12,39 @@ from polysynergy_node_runner.setup_context.node_error import NodeError
 
 from polysynergy_nodes.mongodb.mongodb_connection import MongoDBConnection
 from polysynergy_nodes.mongodb.utils.find_connected_mongodb import find_connected_mongodb
+
+# Regex for 24-character hex strings (MongoDB ObjectId format)
+_OBJECTID_RE = re.compile(r'^[0-9a-fA-F]{24}$')
+
+_OBJECTID_OPERATORS = {"$gt", "$gte", "$lt", "$lte", "$eq", "$ne", "$in", "$nin"}
+
+def _convert_objectids(obj, parent_key=None):
+    """Recursively convert 24-char hex strings in _id fields to ObjectId,
+    and handle {\"$oid\": \"...\"} extended JSON syntax."""
+    if isinstance(obj, dict):
+        result = {}
+        for key, value in obj.items():
+            if isinstance(value, dict) and "$oid" in value:
+                result[key] = ObjectId(value["$oid"])
+            elif key == "_id" and isinstance(value, str) and _OBJECTID_RE.match(value):
+                result[key] = ObjectId(value)
+            elif key == "_id" and isinstance(value, dict):
+                # Operators under _id: convert their values to ObjectId
+                result[key] = _convert_objectids(value, parent_key="_id")
+            elif parent_key == "_id" and key in _OBJECTID_OPERATORS:
+                if isinstance(value, str) and _OBJECTID_RE.match(value):
+                    result[key] = ObjectId(value)
+                elif isinstance(value, list):
+                    result[key] = [ObjectId(v) if isinstance(v, str) and _OBJECTID_RE.match(v) else v for v in value]
+                else:
+                    result[key] = value
+            else:
+                result[key] = _convert_objectids(value)
+        return result
+    elif isinstance(obj, list):
+        return [_convert_objectids(item) for item in obj]
+    return obj
+
 
 _VALID_OPERATIONS = {
     "list_collections",
@@ -223,11 +258,11 @@ class MongoDBQuery(Node):
                 )
 
             # Parse all JSON inputs upfront so errors surface early
-            query_parsed = self._parse_json(self.query or "{}", "query")
+            query_parsed = _convert_objectids(self._parse_json(self.query or "{}", "query"))
             projection_parsed = self._parse_json(self.projection or "{}", "projection")
             sort_parsed = self._parse_json(self.sort or "{}", "sort")
-            update_parsed = self._parse_json(self.update or "{}", "update")
-            documents_parsed = self._parse_json(self.documents or "[]", "documents")
+            update_parsed = _convert_objectids(self._parse_json(self.update or "{}", "update"))
+            documents_parsed = _convert_objectids(self._parse_json(self.documents or "[]", "documents"))
 
             result: list | dict = []
             affected_count: int = 0

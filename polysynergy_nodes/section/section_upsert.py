@@ -1,7 +1,10 @@
 import asyncio
 import json
+from datetime import datetime, date
+from decimal import Decimal
 from uuid import UUID
 
+from polysynergy_node_runner.execution_context.replace_placeholders import replace_placeholders
 from polysynergy_node_runner.setup_context.dock_property import dock_property, dock_json
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
@@ -81,24 +84,49 @@ class SectionUpsert(Node):
         """Upsert a record in the section"""
         try:
             print(f"\n[Section Upsert] ========== Upserting Record ==========")
-            print(f"[Section Upsert] Section ID: {self.section_id}")
-            print(f"[Section Upsert] Record ID: {self.record_id}")
-            print(f"[Section Upsert] Field Data: {json.dumps(self.field_data, indent=2)}")
+
+            # Resolve placeholders into local vars (don't mutate self)
+            section_id = replace_placeholders(
+                data=self.section_id, values=self.__dict__, state=self.state, current_node=self
+            )
+            record_id = replace_placeholders(
+                data=self.record_id, values=self.__dict__, state=self.state, current_node=self
+            )
+            field_data = replace_placeholders(
+                data=self.field_data, values=self.__dict__, state=self.state, current_node=self
+            )
 
             # Validate inputs
-            if not self.section_id:
+            if not section_id:
                 raise ValueError("Section ID is required")
 
-            if not self.record_id:
+            if not record_id:
                 raise ValueError("Record ID is required")
 
-            if not isinstance(self.field_data, dict):
+            if not isinstance(field_data, dict):
                 raise ValueError("Field data must be a JSON object (dict)")
+
+            # Remove system fields (managed automatically by the repository)
+            system_fields = {'id', 'created_at', 'updated_at'}
+            field_data = {k: v for k, v in field_data.items() if k not in system_fields}
+
+            # Sanitize field_data: convert non-serializable types to strings
+            sanitized_data = {}
+            for k, v in field_data.items():
+                if isinstance(v, (datetime, date)):
+                    sanitized_data[k] = v.isoformat()
+                elif isinstance(v, Decimal):
+                    sanitized_data[k] = float(v)
+                elif isinstance(v, UUID):
+                    sanitized_data[k] = str(v)
+                else:
+                    sanitized_data[k] = v
+            field_data = sanitized_data
 
             # Convert IDs to UUIDs
             try:
-                section_uuid = UUID(self.section_id)
-                record_uuid = UUID(self.record_id)
+                section_uuid = UUID(section_id)
+                record_uuid = UUID(record_id)
             except (ValueError, AttributeError) as e:
                 raise ValueError(f"Invalid UUID format: {str(e)}")
 
@@ -121,14 +149,14 @@ class SectionUpsert(Node):
                 if existing_record:
                     # Record exists - UPDATE
                     print(f"[Section Upsert] Record exists - updating")
-                    updated_record = content_repo.update(record_uuid, self.field_data)
+                    updated_record = content_repo.update(record_uuid, {**field_data})
                     return updated_record, False  # False = was not created (was updated)
                 else:
                     # Record doesn't exist - CREATE with explicit ID
                     print(f"[Section Upsert] Record doesn't exist - creating with ID {record_uuid}")
 
                     # Add ID to field_data
-                    create_data = {**self.field_data, "id": str(record_uuid)}
+                    create_data = {**field_data, "id": str(record_uuid)}
                     created_record = content_repo.create(create_data)
                     return created_record, True  # True = was created
 

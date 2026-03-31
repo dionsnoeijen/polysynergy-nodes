@@ -3,6 +3,7 @@ import json
 from typing import Dict, Any
 from uuid import UUID
 
+from polysynergy_node_runner.execution_context.replace_placeholders import replace_placeholders
 from polysynergy_node_runner.setup_context.dock_property import dock_property, dock_json
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
@@ -61,21 +62,27 @@ class SectionCreate(Node):
         """Create a new record in the section"""
         try:
             print(f"\n[Section Create] ========== Creating Record ==========")
-            print(f"[Section Create] Section ID: {self.section_id}")
-            print(f"[Section Create] Field Data: {json.dumps(self.field_data, indent=2)}")
+
+            # Resolve placeholders into local vars (don't mutate self)
+            section_id = replace_placeholders(
+                data=self.section_id, values=self.__dict__, state=self.state, current_node=self
+            )
+            field_data = replace_placeholders(
+                data=self.field_data, values=self.__dict__, state=self.state, current_node=self
+            )
 
             # Validate inputs
-            if not self.section_id:
+            if not section_id:
                 raise ValueError("Section ID is required")
 
-            if not isinstance(self.field_data, dict):
+            if not isinstance(field_data, dict):
                 raise ValueError("Field data must be a JSON object (dict)")
 
             # Convert section_id string to UUID
             try:
-                section_uuid = UUID(self.section_id)
+                section_uuid = UUID(section_id)
             except (ValueError, AttributeError):
-                raise ValueError(f"Invalid section ID format: {self.section_id}")
+                raise ValueError(f"Invalid section ID format: {section_id}")
 
             # Execute in thread (repositories use sync SQLAlchemy)
             def _sync_create():
@@ -89,7 +96,7 @@ class SectionCreate(Node):
 
                 # Create record in content table
                 content_repo = NodeContentRepository(section_info)
-                created_record = content_repo.create(self.field_data)
+                created_record = content_repo.create(field_data)
 
                 return created_record
 

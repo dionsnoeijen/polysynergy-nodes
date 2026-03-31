@@ -15,14 +15,16 @@ class JsonCombine(Node):
     true_path: bool | dict = PathSettings(label="Combined")
     false_path: bool | dict = PathSettings(label="Error")
 
-    def execute(self):
+    async def execute(self):
         try:
             combined = {}
             for key, value in (self.combine or {}).items():
                 if isinstance(value, dict):
                     combined.update(value)
+                elif isinstance(value, list):
+                    combined[key] = value
                 else:
-                    raise ValueError(f"Key '{key}' does not contain a dict")
+                    combined[key] = value
 
             self.true_path = combined
 

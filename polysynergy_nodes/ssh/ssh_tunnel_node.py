@@ -112,7 +112,33 @@ class SshTunnelNode(ServiceNode):
         }
 
         if self.ssh_private_key:
-            pkey = paramiko.RSAKey.from_private_key(io.StringIO(self.ssh_private_key))
+            private_key = self.ssh_private_key.replace("\\n", "\n").strip()
+            # If newlines were completely stripped, reconstruct PEM format
+            if "\n" not in private_key:
+                # Extract header and footer (e.g. -----BEGIN OPENSSH PRIVATE KEY-----)
+                import re
+                m = re.match(r'(-----BEGIN [A-Z ]+-----)(.*)(-----END [A-Z ]+-----)', private_key)
+                if m:
+                    header, body, footer = m.group(1), m.group(2), m.group(3)
+                    # Wrap body at 70 characters per line
+                    body = body.strip()
+                    wrapped = "\n".join(body[i:i+70] for i in range(0, len(body), 70))
+                    private_key = f"{header}\n{wrapped}\n{footer}\n"
+            print(f"[SSHTunnel] Key starts with: {repr(private_key[:80])}")
+            print(f"[SSHTunnel] Key length: {len(private_key)}")
+            print(f"[SSHTunnel] Contains newlines: {chr(10) in private_key}")
+            key_classes = [paramiko.Ed25519Key, paramiko.ECDSAKey, paramiko.RSAKey, paramiko.DSSKey]
+            pkey = None
+            for key_class in key_classes:
+                try:
+                    pkey = key_class.from_private_key(io.StringIO(private_key))
+                    break
+                except (paramiko.ssh_exception.SSHException, ValueError):
+                    continue
+            if pkey is None:
+                raise paramiko.ssh_exception.SSHException(
+                    "Could not deserialize private key (tried Ed25519, ECDSA, RSA, DSS)"
+                )
             connect_kwargs["pkey"] = pkey
         elif self.ssh_password:
             connect_kwargs["password"] = self.ssh_password
