@@ -1,7 +1,7 @@
 import jmespath
 import json
 
-from polysynergy_node_runner.setup_context.dock_property import dock_json, dock_code_editor
+from polysynergy_node_runner.setup_context.dock_property import dock_json, dock_jmes
 from polysynergy_node_runner.setup_context.node import Node
 from polysynergy_node_runner.setup_context.node_decorator import node
 from polysynergy_node_runner.setup_context.node_error import NodeError
@@ -16,7 +16,10 @@ from polysynergy_node_runner.setup_context.path_settings import PathSettings
 class JsonQuery(Node):
     json_input_as_dict: dict | list = NodeVariableSettings(label="JSON Input as Dict or List", has_in=True)
     json_input_as_string: str = NodeVariableSettings(label="JSON Input as String", dock=dock_json(), has_in=True)
-    query: str = NodeVariableSettings(label="JMESPath Query", dock=dock_code_editor(info="JMESPath expression for querying JSON data"), has_in=True)
+    query: str = NodeVariableSettings(label="JMESPath Query", dock=dock_jmes(info="JMESPath expression for querying JSON data"), has_in=True)
+
+    input_example: str = NodeVariableSettings(label="Input Example", dock=dock_json())
+    output_example: str = NodeVariableSettings(label="Output Example", dock=dock_json())
 
     result_as_string: str = NodeVariableSettings(label="Query Result (String)", has_out=True)
 
